@@ -65,3 +65,38 @@ Plan: `~/.claude/plans/system-reminder-you-are-operating-streamed-reddy.md`
 - Timers `render` used to be passed straight to `store.subscribe`, which calls listeners with the state. Once `render` took a `now` parameter, that would have passed the state object in as the time, so it's wrapped as `() => render()` (the same as Analytics).
 - `.claude/launch.json` now uses `autoPort` because another session's server held port 5173.
 - Screenshots in the Browser pane sometimes lag a repaint behind, so DOM state was confirmed with `javascript_tool` before trusting a screenshot.
+
+---
+
+# Settings page: themes + storage estimate
+
+Plan: `~/.claude/plans/system-reminder-you-are-operating-twinkly-token.md`
+
+## Build
+- [x] `css/styles.css`: split color tokens into light/dark scopes, new `--accent-text` / `--danger-text` / `--placeholder` / `--today-bg` / `--shadow-pop`
+- [x] `js/storage.js`: `DARK_SURFACE_MUTED`, `darkEdge`, `measureEntries`, `estimateUsage`, `formatSize`
+- [x] `js/ui.js`: `--task-edge` via `light-dark()`
+- [x] `js/theme.js`: pre-paint theme apply, system + cross-tab sync
+- [x] `settings/index.html` + `js/settings.js` + settings CSS
+- [x] Settings nav link on every page, nav wraps on narrow screens
+- [x] `tests.html`: new cases
+- [x] `README.md`
+
+## Verify
+- [x] tests.html all green (56/56), in both themes
+- [x] Dark theme on Timers, Analytics, Calendar, Settings (Charcoal/White tasks, running states, popover, met cells, banner)
+- [x] No flash of light theme on reload in dark
+- [x] Match device follows OS scheme live; light unchanged from `main` (0 computed-style diffs across every element on Timers, Analytics and Calendar)
+- [x] Cross-tab theme sync
+- [x] Storage figures match real sizes; conditional rows appear/disappear
+- [x] Dark token contrast passes AA
+- [x] 320/375px layouts, no console errors
+
+## Review
+- The dark theme uses a lighter `*-text` sibling for tokens that were doing two jobs: `--accent-strong` and `--danger` were both text on the page and fills under white text. The light values are identical, so the light theme is unchanged. That was checked by swapping `main`'s stylesheet in at runtime and diffing computed styles.
+- Task colors keep their fills. On dark, `--task-edge` comes from `light-dark(light edge, darkEdge(color))`, so the other tabs restyle live when the theme changes, with no re-render. `darkEdge` targets `--surface-muted`, not `--surface`, because the running button's hover puts task-colored text on it. Against `--surface` it only reached about 4.0:1.
+- The storage estimate is measured in characters (key + value) against 5 MiB. It's labelled as an estimate because no browser reports localStorage usage. Other apps' keys at the same origin (e.g. localhost) share the quota, so they're shown on their own line.
+- Found while verifying: Settings only re-measured on tracker or theme changes, so a key removed in another tab (the corrupt backup, other apps) went stale. It now also listens to every `storage` event.
+- Also found while verifying: `replaceAll` over still-corrupt stored data re-creates `timeTracker.v1.corrupt`, because `update()` re-reads before writing. That's existing behavior, and the breakdown reports it accurately.
+- Mobile: stacked theme cards were mostly preview, so at ≤ 600px the preview sits beside the label and shrinks with the card. The nav wraps to two rows at 320px.
+- The seeded test data was removed afterwards. This origin's storage is empty again, as it was before.

@@ -1,12 +1,29 @@
 /* Time Tracker: shared styles for every page. */
 
 :root {
+  --radius: 12px;
+  --radius-sm: 8px;
+  --font: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  --gutter: 16px;
+  --max: 1080px;
+}
+
+/*
+ * Colors. js/theme.js sets data-theme on <html> before the first paint. The
+ * selectors aren't tied to :root, so any element can carry data-theme and get
+ * that theme's tokens, which is how the Settings previews show both themes.
+ * `*-text` tokens are for text on the page; their siblings are for fills and
+ * borders, because dark mode needs light text but still-dark fills.
+ */
+:root,
+[data-theme='light'] {
   color-scheme: light;
   --bg: #f6f7f9;
   --surface: #ffffff;
   --surface-muted: #eef0f3;
   --text: #1a1d21;
   --text-muted: #555e68;
+  --placeholder: #6b7280;
   --border: #d9dee3;
   /* ≥ 3:1 against white, so input and button edges stay perceivable (WCAG 1.4.11). */
   --border-strong: #858f99;
@@ -14,23 +31,56 @@
   --accent: #2563eb;
   --accent-strong: #1d4ed8;
   --accent-soft: #eaf1fe;
+  --accent-text: #1d4ed8;
   --focus: #1d4ed8;
   --danger: #b91c1c;
   --danger-strong: #991b1b;
   --danger-soft: #fdf1f1;
   --danger-border: #f0bcbc;
+  --danger-text: #b91c1c;
   --success: #166534;
   --success-soft: #e6f4ea;
   --warning-bg: #fff8e6;
   --warning-border: #e3ad3f;
   --warning-text: #5f3f00;
   --now: #d93025;
-  --radius: 12px;
-  --radius-sm: 8px;
+  --today-bg: #f7faff;
   --shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 1px 3px rgba(16, 24, 40, 0.07);
-  --font: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-  --gutter: 16px;
-  --max: 1080px;
+  --shadow-pop: 0 8px 24px rgba(16, 24, 40, 0.16);
+}
+
+/* Text pairs are ≥ 4.5:1 and borders ≥ 3:1, as in light. `--surface-muted` must match DARK_SURFACE_MUTED in js/storage.js. */
+[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0f1114;
+  --surface: #181b1f;
+  --surface-muted: #23272d;
+  --text: #e6e8eb;
+  --text-muted: #a0a8b1;
+  --placeholder: #8b949e;
+  --border: #2e333a;
+  --border-strong: #6b747e;
+  --grid-line: #262a30;
+  /* The accent stays dark enough for white text on buttons; links use the lighter --accent-text. */
+  --accent: #2563eb;
+  --accent-strong: #1d4ed8;
+  --accent-soft: #1b2a4a;
+  --accent-text: #8ab4f8;
+  --focus: #8ab4f8;
+  --danger: #dc2626;
+  --danger-strong: #b91c1c;
+  --danger-soft: #2c1517;
+  --danger-border: #6b2a2a;
+  --danger-text: #f28b82;
+  --success: #6fcf8f;
+  --success-soft: #12291b;
+  --warning-bg: #2b2208;
+  --warning-border: #8a6512;
+  --warning-text: #f5d58a;
+  --now: #ff6b5e;
+  --today-bg: #16202e;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.55);
 }
 
 /* ---- Base ---------------------------------------------------------------- */
@@ -74,7 +124,7 @@ p {
 }
 
 a {
-  color: var(--accent-strong);
+  color: var(--accent-text);
   text-underline-offset: 2px;
 }
 
@@ -110,7 +160,7 @@ input {
   padding: 8px 12px;
   border-radius: var(--radius-sm);
   background: var(--surface);
-  color: var(--accent-strong);
+  color: var(--accent-text);
   font-weight: 600;
   box-shadow: var(--shadow);
 }
@@ -192,7 +242,7 @@ input {
 
 .nav-list a[aria-current='page'] {
   background: var(--accent-soft);
-  color: var(--accent-strong);
+  color: var(--accent-text);
 }
 
 .banner {
@@ -345,7 +395,7 @@ input {
 
 .btn-quiet-danger:hover {
   background: var(--danger-soft);
-  color: var(--danger);
+  color: var(--danger-text);
 }
 
 .btn-danger {
@@ -441,7 +491,7 @@ input {
 }
 
 .field input::placeholder {
-  color: #6b7280;
+  color: var(--placeholder);
 }
 
 .field input[aria-invalid='true'] {
@@ -450,7 +500,7 @@ input {
 }
 
 .field-error {
-  color: var(--danger);
+  color: var(--danger-text);
   font-size: 0.85rem;
 }
 
@@ -954,7 +1004,7 @@ input {
 }
 
 .week-table th.is-today .th-day {
-  color: var(--accent-strong);
+  color: var(--accent-text);
 }
 
 /* The task column stays put while the day columns scroll underneath it. */
@@ -1080,7 +1130,7 @@ input {
 }
 
 .cal-day-head.is-today .cal-dow {
-  color: var(--accent-strong);
+  color: var(--accent-text);
 }
 
 .cal-day-head.is-today .cal-date {
@@ -1120,7 +1170,7 @@ input {
 }
 
 .cal-day.is-today {
-  background-color: #f7faff;
+  background-color: var(--today-bg);
 }
 
 .cal-block {
@@ -1229,7 +1279,7 @@ input {
   border-left: 4px solid var(--task-edge);
   border-radius: var(--radius-sm);
   background: var(--surface);
-  box-shadow: 0 8px 24px rgba(16, 24, 40, 0.16);
+  box-shadow: var(--shadow-pop);
   font-size: 0.875rem;
   pointer-events: none;
 }
@@ -1247,12 +1297,204 @@ input {
   font-variant-numeric: tabular-nums;
 }
 
+/* ---- Settings page ------------------------------------------------------- */
+
+.theme-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: 12px;
+}
+
+.theme-option {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.theme-option:hover {
+  background: var(--surface-muted);
+}
+
+/* A thicker accent border marks the choice, alongside the radio's own dot. */
+.theme-option:has(input:checked) {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.theme-preview {
+  display: flex;
+  overflow: hidden;
+  height: 84px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+/* Drawn from the tokens of the pane's own data-theme, not the page's. */
+.preview-pane {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  background: var(--bg);
+}
+
+.preview-bar {
+  height: 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.preview-card {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 0 10px;
+  padding: 7px 8px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--surface);
+}
+
+.preview-line {
+  width: 70%;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--text);
+}
+
+.preview-line.is-muted {
+  width: 45%;
+  background: var(--text-muted);
+}
+
+.preview-pill {
+  width: 30px;
+  max-width: 100%;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.theme-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.theme-label input {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin: 2px 0 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.theme-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.theme-name {
+  font-weight: 650;
+}
+
+.theme-hint {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.storage-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.storage-headline {
+  color: var(--text-muted);
+}
+
+.storage-value {
+  margin-right: 4px;
+  color: var(--text);
+  font-size: 2rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.storage-percent {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.storage-breakdown {
+  margin: 0 0 12px;
+  border-top: 1px solid var(--grid-line);
+}
+
+.storage-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--grid-line);
+}
+
+.storage-row dt {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.storage-label {
+  font-weight: 600;
+}
+
+.storage-detail {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
+}
+
+.storage-row dd {
+  flex: none;
+  margin: 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.storage-status {
+  margin-bottom: 4px;
+  font-size: 0.925rem;
+}
+
+.storage-note {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
 /* ---- Small screens, motion, forced colors -------------------------------- */
 
 @media (max-width: 600px) {
   .page {
     gap: 20px;
     padding-top: 16px;
+  }
+
+  /* Four links barely fit at 375px, so they may wrap onto a second line on narrower screens. */
+  .nav-list {
+    flex-wrap: wrap;
+    gap: 2px;
   }
 
   .nav-list a {
@@ -1264,6 +1506,36 @@ input {
   }
 
   .stat-value {
+    font-size: 1.6rem;
+  }
+
+  /* Stacked full-width, the theme cards are mostly preview, so put it beside the label instead. */
+  .theme-option {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .theme-preview {
+    flex: none;
+    width: clamp(80px, 35%, 112px);
+    height: 64px;
+  }
+
+  .preview-pane {
+    gap: 6px;
+  }
+
+  .preview-bar {
+    height: 10px;
+  }
+
+  .preview-card {
+    margin: 0 8px;
+    padding: 5px 6px;
+  }
+
+  .storage-value {
     font-size: 1.6rem;
   }
 }
@@ -1296,10 +1568,17 @@ input {
     border: 1px solid CanvasText;
   }
 
+  /* The theme previews are pictures of each theme, so they keep their real colors. */
   .dot,
   .swatch-chip,
-  .progress-fill {
+  .progress-fill,
+  .theme-preview {
     forced-color-adjust: none;
+  }
+
+  .theme-option:has(input:checked) {
+    border-color: Highlight;
+    box-shadow: 0 0 0 1px Highlight;
   }
 
   /* The chosen days are shown only by their fill, which forced colors would remove. */

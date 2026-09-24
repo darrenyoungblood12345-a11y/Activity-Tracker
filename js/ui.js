@@ -84,16 +84,19 @@
   /*
    * CSS variables for anything drawn in a task's color:
    * --task-color fills, --task-ink is text on top of that fill, and --task-edge
-   * is for lines and text against the page. On a dark color the edge is the
-   * color itself, so it doesn't show; on a light one (White) it's a gray that
-   * keeps the fill and its outline visible on a white page.
+   * is for lines and text against the page. On the light theme a dark color's
+   * edge is the color itself, so it doesn't show, and a light one (White) gets
+   * a gray that keeps the fill and its outline visible on a white page. On the
+   * dark theme the edge is the color tinted lighter (store.darkEdge).
+   * light-dark() picks by the page's color-scheme, so a theme change restyles
+   * without re-rendering.
    */
   const taskColorVars = (color) => {
     const light = store.needsDarkText(color)
     return {
       '--task-color': color,
       '--task-ink': light ? store.DARK_TEXT : '#ffffff',
-      '--task-edge': light ? 'var(--text-muted)' : color,
+      '--task-edge': `light-dark(${light ? 'var(--text-muted)' : color}, ${store.darkEdge(color)})`,
     }
   }
 
@@ -216,6 +219,7 @@
     createProgressBar,
     setProgress,
     remainingText,
+    plural,
     taskColorVars,
     setTaskColor,
     colorDot,

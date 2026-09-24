@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Settings · Time Tracker</title>
+  <meta name="description" content="Choose a light or dark theme and see how much browser storage the tracker uses.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='17' r='13' fill='%232563eb'/><path d='M16 10v7l5 3' stroke='white' stroke-width='3' fill='none' stroke-linecap='round'/></svg>">
+  <script src="../js/theme.js"></script>
+  <link rel="stylesheet" href="../css/styles.css">
+  <script defer src="../js/time.js"></script>
+  <script defer src="../js/storage.js"></script>
+  <script defer src="../js/ui.js"></script>
+  <script defer src="../js/settings.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true"></span>Time Tracker</a>
+      <nav aria-label="Main">
+        <ul class="nav-list">
+          <li><a href="../index.html">Timers</a></li>
+          <li><a href="../analytics/index.html">Analytics</a></li>
+          <li><a href="../calendar/index.html">Calendar</a></li>
+          <li><a href="../settings/index.html" aria-current="page">Settings</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <div id="storage-warning" class="banner" role="status" hidden></div>
+
+  <main id="main" class="page">
+    <div class="page-head">
+      <h1 class="page-title">Settings</h1>
+      <p class="page-lede">Saved in this browser only.</p>
+    </div>
+
+    <section class="panel" aria-labelledby="theme-heading">
+      <h2 id="theme-heading" class="section-title">Theme</h2>
+      <!-- Each preview carries its own data-theme, so it's drawn with that theme's real colors whatever the page uses. -->
+      <div class="theme-options" id="theme-options" role="radiogroup" aria-labelledby="theme-heading">
+        <label class="theme-option">
+          <span class="theme-preview" aria-hidden="true">
+            <span class="preview-pane" data-theme="light"><span class="preview-bar"></span><span class="preview-card"><span class="preview-line"></span><span class="preview-line is-muted"></span><span class="preview-pill"></span></span></span>
+          </span>
+          <span class="theme-label">
+            <input type="radio" name="theme" value="light">
+            <span class="theme-text"><span class="theme-name">Light</span><span class="theme-hint">The original look</span></span>
+          </span>
+        </label>
+        <label class="theme-option">
+          <span class="theme-preview" aria-hidden="true">
+            <span class="preview-pane" data-theme="dark"><span class="preview-bar"></span><span class="preview-card"><span class="preview-line"></span><span class="preview-line is-muted"></span><span class="preview-pill"></span></span></span>
+          </span>
+          <span class="theme-label">
+            <input type="radio" name="theme" value="dark">
+            <span class="theme-text"><span class="theme-name">Dark</span><span class="theme-hint">Dark backgrounds, light text</span></span>
+          </span>
+        </label>
+        <label class="theme-option">
+          <span class="theme-preview" aria-hidden="true">
+            <span class="preview-pane" data-theme="light"><span class="preview-bar"></span><span class="preview-card"><span class="preview-line"></span><span class="preview-line is-muted"></span><span class="preview-pill"></span></span></span>
+            <span class="preview-pane" data-theme="dark"><span class="preview-bar"></span><span class="preview-card"><span class="preview-line"></span><span class="preview-line is-muted"></span><span class="preview-pill"></span></span></span>
+          </span>
+          <span class="theme-label">
+            <input type="radio" name="theme" value="system">
+            <span class="theme-text"><span class="theme-name">Match device</span><span class="theme-hint">Follows your system's light or dark setting</span></span>
+          </span>
+        </label>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="storage-heading">
+      <h2 id="storage-heading" class="section-title">Storage</h2>
+      <div class="storage-summary" id="storage-summary">
+        <p class="storage-headline"><span class="storage-value" id="storage-used">0 B</span> used of about <span id="storage-limit">5 MB</span></p>
+        <div class="progress" id="storage-bar" role="progressbar" aria-label="Estimated storage used" aria-valuemin="0" aria-valuemax="100"><div class="progress-fill"></div></div>
+        <p class="storage-percent" id="storage-percent"></p>
+      </div>
+      <dl class="storage-breakdown" id="storage-breakdown"></dl>
+      <p class="storage-status" id="storage-status"></p>
+      <p class="storage-note">These figures are estimates. Browsers let each site keep about 5 MB in local storage but don't report how much is used, so this adds up the characters in everything saved at this address.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer" id="site-footer"></footer>
+</body>
+</html>
