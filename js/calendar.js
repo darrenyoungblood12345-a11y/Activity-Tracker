@@ -102,7 +102,7 @@
         className: `cal-block${session.isActive ? ' is-running' : ''}`,
         dataset: { key },
         style: {
-          '--task-color': task.color,
+          ...ui.taskColorVars(task.color),
           left: `calc(${(layout.col / layout.cols) * 100}% + 2px)`,
           width: `calc(${100 / layout.cols}% - 4px)`,
         },
@@ -139,7 +139,7 @@
 
   const fillPopover = (block) => {
     const summary = sessionSummary(block, block.sessionEnd)
-    popover.style.setProperty('--task-color', block.task.color)
+    ui.setTaskColor(popover, block.task.color)
     popover.replaceChildren(
       el('p', { className: 'pop-title' }, el('span', { className: 'dot', 'aria-hidden': 'true' }), summary.title),
       el('p', { className: 'pop-range', text: summary.range }),

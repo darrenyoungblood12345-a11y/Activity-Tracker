@@ -362,9 +362,9 @@ input {
 /* Filled with the task color when idle; outlined while running, so the two states differ in more than the label. */
 .btn-toggle {
   min-width: 100px;
-  border: 2px solid var(--task-color);
+  border: 2px solid var(--task-edge);
   background: var(--task-color);
-  color: #fff;
+  color: var(--task-ink);
 }
 
 .btn-toggle:hover {
@@ -375,7 +375,7 @@ input {
 .btn-toggle.is-running,
 .btn-toggle.is-running:hover {
   background: var(--surface);
-  color: var(--task-color);
+  color: var(--task-edge);
   filter: none;
 }
 
@@ -386,6 +386,12 @@ input {
 .btn-icon {
   width: 40px;
   padding: 0;
+}
+
+.btn-small {
+  min-height: 32px;
+  padding: 4px 10px;
+  font-size: 0.85rem;
 }
 
 .btn-row {
@@ -461,9 +467,130 @@ input {
     grid-template-columns: minmax(0, 1fr) 12rem;
   }
 
+  .field-name,
+  .field-schedule {
+    grid-column: 1 / -1;
+  }
+
   .field-submit {
     align-self: end;
   }
+}
+
+/* ---- Schedule editor ----------------------------------------------------- */
+
+.schedule-days {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+/* Chips shrink to fit a narrow card, but never grow into wide pills on a wide form. */
+.day-picker {
+  display: flex;
+  flex: 1 1 18rem;
+  gap: 4px;
+  max-width: 26rem;
+}
+
+.day-chip {
+  position: relative;
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  cursor: pointer;
+}
+
+/* Same technique as the swatches: the real checkbox stays in place, invisible, so it keeps working with a keyboard and screen readers. */
+.day-chip input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.field .day-chip-text {
+  display: grid;
+  flex: 1;
+  place-items: center;
+  min-height: 36px;
+  padding: 0 2px;
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.day-chip:hover .day-chip-text {
+  background: var(--surface-muted);
+}
+
+.day-chip input:checked + .day-chip-text {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+.day-chip input:focus-visible + .day-chip-text {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* A few digits of minutes don't need the full width of the add form. */
+.field-schedule > .field input[type='number'] {
+  max-width: 12rem;
+}
+
+.field .check-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  cursor: pointer;
+}
+
+.check-row input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.custom-goals {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.day-goals {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(4rem, 1fr));
+  gap: 8px;
+  max-width: 40rem;
+}
+
+.day-goal {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.field .day-goal label {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.field .day-goal input[type='number'] {
+  padding-inline: 8px;
 }
 
 .swatches {
@@ -495,16 +622,17 @@ input {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: var(--swatch);
+  background: var(--task-color);
+  box-shadow: inset 0 0 0 1px var(--task-edge);
 }
 
 .swatch input:checked + .swatch-chip {
-  box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--swatch);
+  box-shadow: inset 0 0 0 1px var(--task-edge), 0 0 0 2px var(--surface), 0 0 0 4px var(--task-edge);
 }
 
 .swatch input:checked + .swatch-chip::after {
   content: '✓';
-  color: #fff;
+  color: var(--task-ink);
   font-size: 0.95rem;
   font-weight: 700;
 }
@@ -537,6 +665,7 @@ input {
   height: 12px;
   border-radius: 50%;
   background: var(--task-color);
+  box-shadow: inset 0 0 0 1px var(--task-edge, transparent);
 }
 
 .task-name {
@@ -559,6 +688,7 @@ input {
   height: 100%;
   border-radius: inherit;
   background: var(--task-color, var(--accent));
+  box-shadow: inset 0 0 0 1px var(--task-edge, transparent);
   transition: width 0.3s ease;
 }
 
@@ -579,14 +709,14 @@ input {
   gap: 14px;
   padding: 16px;
   border: 1px solid var(--border);
-  border-top: 4px solid var(--task-color);
+  border-top: 4px solid var(--task-edge);
   border-radius: var(--radius);
   background: var(--surface);
   box-shadow: var(--shadow);
 }
 
 .task-card.is-running {
-  box-shadow: 0 0 0 2px var(--task-color), var(--shadow);
+  box-shadow: 0 0 0 2px var(--task-edge), var(--shadow);
 }
 
 .card-view {
@@ -610,7 +740,7 @@ input {
   padding: 2px 8px;
   border: 1px solid currentColor;
   border-radius: 999px;
-  color: var(--task-color);
+  color: var(--task-edge);
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -668,6 +798,16 @@ input {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.task-schedule {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+/* Not scheduled today: still usable, just quieter. */
+.task-card.is-off:not(.is-running) {
+  box-shadow: none;
 }
 
 /* ---- Analytics page ------------------------------------------------------ */
@@ -738,6 +878,11 @@ input {
 
 .progress-item.is-met .percent {
   color: var(--success);
+}
+
+.progress-item.is-off .percent {
+  color: var(--text-muted);
+  font-weight: 600;
 }
 
 .metrics {
@@ -990,8 +1135,8 @@ input {
   border: 0;
   border-radius: 4px;
   background: var(--task-color);
-  box-shadow: 0 0 0 1px var(--surface);
-  color: #fff;
+  box-shadow: inset 0 0 0 1px var(--task-edge), 0 0 0 1px var(--surface);
+  color: var(--task-ink);
   font-size: 0.75rem;
   line-height: 1.25;
   text-align: left;
@@ -1034,7 +1179,7 @@ input {
   padding: 0;
 }
 
-/* Dark stripes (never light ones) so the white label keeps its contrast while the session is running. */
+/* Dark stripes (never light ones) so the label keeps its contrast while the session is running. */
 .cal-block.is-running {
   background-image: repeating-linear-gradient(135deg, rgba(0, 0, 0, 0.14) 0 6px, transparent 6px 12px);
 }
@@ -1046,7 +1191,7 @@ input {
   bottom: 0;
   left: 0;
   height: 3px;
-  background: #fff;
+  background: var(--task-ink);
   animation: pulse 1.6s ease-in-out infinite;
 }
 
@@ -1081,7 +1226,7 @@ input {
   max-width: 260px;
   padding: 10px 12px;
   border: 1px solid var(--border);
-  border-left: 4px solid var(--task-color);
+  border-left: 4px solid var(--task-edge);
   border-radius: var(--radius-sm);
   background: var(--surface);
   box-shadow: 0 8px 24px rgba(16, 24, 40, 0.16);
@@ -1155,5 +1300,13 @@ input {
   .swatch-chip,
   .progress-fill {
     forced-color-adjust: none;
+  }
+
+  /* The chosen days are shown only by their fill, which forced colors would remove. */
+  .day-chip input:checked + .day-chip-text {
+    forced-color-adjust: none;
+    border-color: Highlight;
+    background: Highlight;
+    color: HighlightText;
   }
 }

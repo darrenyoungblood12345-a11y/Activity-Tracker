@@ -33,3 +33,35 @@ Bugs found and fixed during verification:
 6. **Mobile 7-day table opened on the oldest day.** It now opens scrolled to today, after the cells are filled.
 
 Palette: validated with the dataviz skill's checker. It passes adjacent-pair colorblind separation in default-assignment order, and white text meets WCAG AA on all 8 colors. No 8-color set passes all-pairs, so the task name is always shown next to its color.
+
+---
+
+# Charcoal/White colors + per-weekday schedules
+
+Plan: `~/.claude/plans/system-reminder-you-are-operating-streamed-reddy.md`
+
+## Build
+- [x] `js/storage.js`: Charcoal + White swatches, `needsDarkText`, `weekdayGoals` model + v1 migration
+- [x] `js/time.js`: `weekdayName`, `weekdayGoal`, `describeSchedule`
+- [x] `js/ui.js`: `taskColorVars` / `setTaskColor`
+- [x] `css/styles.css`: `--task-ink` / `--task-edge`, schedule editor, off-today styles
+- [x] `js/timers.js` + `index.html`: schedule editor, "Not scheduled today" section, midnight re-render
+- [x] `js/analytics.js` + `analytics/index.html`: per-day goals, off days
+- [x] `js/calendar.js`: color vars
+- [x] `tests.html`: updated fixtures + new cases
+- [x] `README.md`
+
+## Verify
+- [x] tests.html all green (51/51)
+- [x] v1 data migrates to "Every day"
+- [x] White and Charcoal readable on Timers, Analytics, Calendar
+- [x] Weekday/weekend/custom schedules, validation, edit round trip
+- [x] Analytics goals met + 7-day table off days
+- [x] Midnight rollover moves cards between sections
+- [x] 375px layout, no console errors
+
+## Review
+- White works because every task-color surface now reads `--task-ink` (text on the fill) and `--task-edge` (lines and text against the page) from `ui.taskColorVars`. For the eight hues and Charcoal both resolve to the old values, so existing tasks look identical.
+- Timers `render` used to be passed straight to `store.subscribe`, which calls listeners with the state. Once `render` took a `now` parameter, that would have passed the state object in as the time, so it's wrapped as `() => render()` (the same as Analytics).
+- `.claude/launch.json` now uses `autoPort` because another session's server held port 5173.
+- Screenshots in the Browser pane sometimes lag a repaint behind, so DOM state was confirmed with `javascript_tool` before trusting a screenshot.

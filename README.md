@@ -1,11 +1,11 @@
 # Time Tracker
 
-A small static site for tracking time on daily tasks. Each task has its own stopwatch that you can pause and resume, plus a daily goal such as "Reading: 30 minutes a day". There's no framework, no build step and no backend: just HTML, CSS and vanilla JavaScript, with data saved in your browser's `localStorage`.
+A small static site for tracking time on daily tasks. Each task has its own stopwatch that you can pause and resume, plus a weekly schedule of goals such as "Reading: 30 minutes a day", "Gym: 45 minutes on Mon, Wed and Fri" or "Guitar: 20 minutes on weekdays, 1 hour on Saturday". There's no framework, no build step and no backend: just HTML, CSS and vanilla JavaScript, with data saved in your browser's `localStorage`.
 
 | Page | What it does |
 |---|---|
-| **Timers** (`/index.html`) | Create tasks and start or pause each stopwatch. Only one runs at a time. |
-| **Analytics** (`/analytics/`) | Today's total, goals met, per-task progress and a 7-day goal table. |
+| **Timers** (`/index.html`) | Create tasks, choose the days they happen and each day's goal, and start or pause each stopwatch. Only one runs at a time. Tasks that aren't scheduled today are listed separately and can still be started. |
+| **Analytics** (`/analytics/`) | Today's total, goals met, per-task progress and a 7-day goal table. Days a task isn't scheduled don't count against it. |
 | **Calendar** (`/calendar/`) | A Google Calendar–style week view with one block per tracked session. |
 
 ## Run it locally
@@ -26,20 +26,23 @@ To deploy, upload the folder as-is to GitHub Pages, Netlify or any static host. 
 
 ## Tests
 
-Open **`/tests.html`** on the same server. It runs assertions against `js/time.js`, covering midnight splitting, today's total with a running timer, duration formatting, overlap layout and DST-safe day math. It also tests the pure reducers in `js/storage.js`. Results appear on the page, and the tab title shows the pass count. The tests never write your saved data.
+Open **`/tests.html`** on the same server. It runs assertions against `js/time.js`, covering midnight splitting, today's total with a running timer, duration formatting, overlap layout, DST-safe day math and weekly schedules. It also tests the pure reducers, the version 1 → 2 migration and the text-contrast helper in `js/storage.js`. Results appear on the page, and the tab title shows the pass count. The tests never write your saved data.
 
 ## How data is stored
 
-Everything is stored under one versioned `localStorage` key, `timeTracker.v1`:
+Everything is stored under one `localStorage` key, `timeTracker.v1`. The key keeps its name across upgrades, and the `version` field inside it tracks the shape:
 
 ```js
 {
-  version: 1,
-  tasks:    [{ id, name, color, dailyGoalMinutes, createdAt }],
+  version: 2,
+  tasks:    [{ id, name, color, weekdayGoals, createdAt }],
   sessions: [{ id, taskId, start, end }],   // epoch ms, one per start→pause stretch
   active:   { taskId, start } | null        // the running timer, if any
 }
 ```
+
+- **`weekdayGoals`** holds 7 goals in minutes, indexed like `Date#getDay()` (`[0]` is Sunday). `0` means the task isn't scheduled that day. For example, `[0, 60, 60, 60, 60, 60, 20]` means an hour on weekdays, 20 minutes on Saturday and off on Sunday.
+- **Version 1 data upgrades automatically.** A task's old `dailyGoalMinutes` becomes the same goal every day, both for saved data and for imported backups.
 
 - **Elapsed time always comes from timestamps** (`now - start`), never from counting timer ticks. Background tabs, sleep and refreshes can't make the clock drift.
 - **The running timer is stored**, so it survives refreshes, moving between pages and closing the tab.
@@ -76,4 +79,5 @@ Scripts are classic `<script defer>` tags that load in this order: `time.js`, `s
 
 - Days, weeks and midnights use your computer's current timezone. If you change timezones, past sessions are regrouped into the new timezone's days, but their durations don't change.
 - Calendar blocks are placed by wall-clock time, so they line up with the hour labels even on days when DST starts or ends. Their labels still show real elapsed time.
-- Goals have no history. Editing a goal recalculates progress for every day, including the 7-day table.
+- Goals and schedules have no history. Editing either recalculates progress for every day, including the 7-day table.
+- Text on a task color switches between white and dark by contrast, so light colors such as White stay readable on buttons and calendar blocks.
