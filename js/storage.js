@@ -10,20 +10,24 @@
 (function () {
   'use strict'
 
+  // The key keeps its original name so saved data survives schema upgrades; `version` inside it tracks the shape.
   const STORAGE_KEY = 'timeTracker.v1'
   const CORRUPT_BACKUP_KEY = `${STORAGE_KEY}.corrupt`
-  const SCHEMA_VERSION = 1
+  const SCHEMA_VERSION = 2
   const NAME_MAX_LENGTH = 60
   const GOAL_MIN = 1
   const GOAL_MAX = 1440
   const DEFAULT_GOAL_MINUTES = 30
+  const DAYS_PER_WEEK = 7
+  const DARK_TEXT = '#1a1d21'
 
   /*
-   * Dark enough that white text on each color passes WCAG AA (≥ 4.5:1), since
-   * calendar blocks and Start buttons print text on the task color. The order
-   * passes an adjacent-pair colorblind-separation check, and new tasks are
-   * offered the next unused color in this order. Identity never depends on
-   * color alone: the task name always appears next to it.
+   * The first eight are dark enough that white text on each passes WCAG AA
+   * (≥ 4.5:1), and in this order they pass an adjacent-pair colorblind-separation
+   * check. Charcoal and White are neutrals added last, so new tasks are still
+   * offered the eight hues first. Text on a task color is chosen per color by
+   * `needsDarkText`, which is what makes White usable. Identity never depends
+   * on color alone: the task name always appears next to it.
    */
   const PALETTE = Object.freeze([
     Object.freeze({ name: 'Blue', value: '#2563eb' }),
@@ -34,7 +38,29 @@
     Object.freeze({ name: 'Ocean', value: '#0369a1' }),
     Object.freeze({ name: 'Pink', value: '#be185d' }),
     Object.freeze({ name: 'Magenta', value: '#c026d3' }),
+    Object.freeze({ name: 'Charcoal', value: '#1f2937' }),
+    Object.freeze({ name: 'White', value: '#ffffff' }),
   ])
+
+  // ---- Color contrast (WCAG 2 relative luminance) -------------------------
+
+  const channelLuminance = (c) => {
+    const s = c / 255
+    return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4
+  }
+
+  const luminance = (hex) => {
+    const [r, g, b] = [1, 3, 5].map((i) => channelLuminance(parseInt(hex.slice(i, i + 2), 16)))
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+  }
+
+  const contrastRatio = (a, b) => {
+    const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x)
+    return (hi + 0.05) / (lo + 0.05)
+  }
+
+  // True when the site's dark text reads better on this color than white does.
+  const needsDarkText = (hex) => contrastRatio(hex, DARK_TEXT) > contrastRatio(hex, '#ffffff')
 
   const emptyState = () => ({ version: SCHEMA_VERSION, tasks: [], sessions: [], active: null })
 
@@ -51,16 +77,33 @@
   const cleanName = (v) => (typeof v === 'string' ? v.trim().slice(0, NAME_MAX_LENGTH) : '')
   const clampGoal = (v) => Math.min(GOAL_MAX, Math.max(GOAL_MIN, Math.round(v)))
 
+  // One day's goal in minutes, where 0 means "not scheduled that day".
+  const cleanDayGoal = (v) => {
+    const minutes = Math.round(Number(v))
+    return Number.isFinite(minutes) && minutes > 0 ? Math.min(GOAL_MAX, minutes) : 0
+  }
+
+  /*
+   * Goals indexed by Date#getDay(), so [0] is Sunday. Version 1 stored a single
+   * `dailyGoalMinutes`, which becomes the same goal every day.
+   */
+  const normalizeWeekdayGoals = (raw) => {
+    if (Array.isArray(raw.weekdayGoals) && raw.weekdayGoals.length === DAYS_PER_WEEK) {
+      return raw.weekdayGoals.map(cleanDayGoal)
+    }
+    const legacy = Number(raw.dailyGoalMinutes)
+    return Array(DAYS_PER_WEEK).fill(Number.isFinite(legacy) ? clampGoal(legacy) : DEFAULT_GOAL_MINUTES)
+  }
+
   const normalizeTask = (raw) => {
     if (!isObject(raw) || typeof raw.id !== 'string' || !raw.id) return null
     const name = cleanName(raw.name)
     if (!name) return null
-    const goal = Number(raw.dailyGoalMinutes)
     return {
       id: raw.id,
       name,
       color: isHexColor(raw.color) ? raw.color.toLowerCase() : PALETTE[0].value,
-      dailyGoalMinutes: Number.isFinite(goal) ? clampGoal(goal) : DEFAULT_GOAL_MINUTES,
+      weekdayGoals: normalizeWeekdayGoals(raw),
       createdAt: isTimestamp(raw.createdAt) ? raw.createdAt : 0,
     }
   }
@@ -273,6 +316,8 @@
     GOAL_MIN,
     GOAL_MAX,
     DEFAULT_GOAL_MINUTES,
+    DARK_TEXT,
+    needsDarkText,
     emptyState,
     normalize,
     addTask,

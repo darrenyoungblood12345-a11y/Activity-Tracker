@@ -45,11 +45,8 @@
             <input id="new-task-name" name="name" type="text" maxlength="60" autocomplete="off" placeholder="e.g. Reading" required aria-describedby="new-task-name-error">
             <p class="field-error" id="new-task-name-error"></p>
           </div>
-          <div class="field field-goal">
-            <label for="new-task-goal">Daily goal (minutes)</label>
-            <input id="new-task-goal" name="goal" type="number" inputmode="numeric" min="1" max="1440" step="1" value="30" required aria-describedby="new-task-goal-error">
-            <p class="field-error" id="new-task-goal-error"></p>
-          </div>
+          <!-- Replaced by the schedule editor from js/timers.js, which each task's edit form also uses. -->
+          <div id="new-task-schedule" class="field-schedule"></div>
           <fieldset class="field field-color">
             <legend>Color</legend>
             <div class="swatches" id="new-task-colors"></div>
@@ -67,7 +64,17 @@
         <p class="empty-title">No tasks yet</p>
         <p>Add your first task above, such as “Reading, 30 minutes a day”, then press <strong>Start</strong>.</p>
       </div>
+      <div id="none-today" class="empty-state" hidden>
+        <p class="empty-title">Nothing scheduled today</p>
+        <p>Your tasks for other days are listed below, and you can still start any of them.</p>
+      </div>
       <ul id="task-list" class="task-grid"></ul>
+    </section>
+
+    <section id="other-section" aria-labelledby="other-heading" hidden>
+      <h2 id="other-heading" class="section-title">Not scheduled today</h2>
+      <p class="section-note">You can still track time on these. It just won't count toward a goal today.</p>
+      <ul id="other-task-list" class="task-grid"></ul>
     </section>
 
     <p id="live-status" class="visually-hidden" role="status"></p>

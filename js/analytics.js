@@ -39,15 +39,15 @@
     const done = metric('Done')
     const goal = metric('Goal')
     const remaining = metric('Remaining')
-    setText(goal.dd, time.formatGoal(task.dailyGoalMinutes))
     const node = el(
       'li',
-      { className: 'progress-item', style: { '--task-color': task.color } },
+      { className: 'progress-item', style: ui.taskColorVars(task.color) },
       el('div', { className: 'progress-item-head' }, el('span', { className: 'dot', 'aria-hidden': 'true' }), el('h3', { className: 'task-name', text: task.name }), percentEl),
+      el('p', { className: 'task-schedule', text: time.describeSchedule(task.weekdayGoals) }),
       progress.bar,
       el('dl', { className: 'metrics' }, done.node, goal.node, remaining.node),
     )
-    return { node, percentEl, progress, done, remaining }
+    return { node, percentEl, progress, done, goal, remaining }
   }
 
   const buildHeaderRow = (now) =>
@@ -77,7 +77,7 @@
     const cells = days.map(buildCell)
     const tr = el(
       'tr',
-      { style: { '--task-color': task.color } },
+      { style: ui.taskColorVars(task.color) },
       el('th', { scope: 'row', className: 'col-task' }, el('span', { className: 'dot', 'aria-hidden': 'true' }), el('span', { text: task.name })),
       cells.map((c) => c.td),
     )
@@ -101,19 +101,27 @@
     tableScroll.scrollLeft = tableScroll.scrollWidth
   }
 
+  /*
+   * Days before the task existed, and days it isn't scheduled, have no goal to
+   * measure against. Time tracked on an unscheduled day is still shown, but
+   * never as a percentage or a ✓.
+   */
   const paintCell = (cell, task, dayStart, doneMs) => {
-    // Days before the task existed have no goal to measure against.
+    const day = time.formatMonthDay(dayStart)
     const beforeCreated = dayStart < time.startOfDay(task.createdAt) && doneMs === 0
-    const progress = time.goalProgress(doneMs, task.dailyGoalMinutes)
+    const goalMinutes = time.weekdayGoal(task.weekdayGoals, dayStart)
+    const off = !beforeCreated && goalMinutes === 0
+    const progress = time.goalProgress(doneMs, goalMinutes)
     const met = !beforeCreated && progress.met
-    setText(cell.valueEl, beforeCreated ? '—' : `${progress.percent}%`)
-    setText(cell.srEl, beforeCreated ? 'not tracked yet' : met ? ', goal met' : '')
+    const tracked = doneMs > 0 ? time.formatShort(doneMs) : ''
+    setText(cell.valueEl, beforeCreated ? '—' : off ? tracked || '—' : `${progress.percent}%`)
+    setText(cell.srEl, beforeCreated ? 'not tracked yet' : off ? `${tracked ? ', ' : ''}not scheduled` : met ? ', goal met' : '')
     cell.checkEl.hidden = !met
     cell.td.classList.toggle('is-met', met)
-    cell.td.classList.toggle('is-empty', beforeCreated || doneMs === 0)
-    cell.td.title = beforeCreated
-      ? `${time.formatMonthDay(dayStart)}: task not created yet`
-      : `${time.formatMonthDay(dayStart)}: ${time.formatShort(doneMs)} of ${time.formatGoal(task.dailyGoalMinutes)}`
+    cell.td.classList.toggle('is-empty', beforeCreated || off || doneMs === 0)
+    cell.td.title = beforeCreated ? `${day}: task not created yet`
+      : off ? `${day}: not scheduled${tracked ? `, ${tracked} tracked` : ''}`
+        : `${day}: ${time.formatShort(doneMs)} of ${time.formatGoal(goalMinutes)}`
   }
 
   const tick = (now) => {
@@ -128,23 +136,30 @@
 
     const todays = state.tasks.map((task) => {
       const doneMs = time.totalForDay(sessions, today, task.id)
-      return { task, doneMs, progress: time.goalProgress(doneMs, task.dailyGoalMinutes) }
+      const goalMinutes = time.weekdayGoal(task.weekdayGoals, now)
+      return { task, doneMs, goalMinutes, progress: time.goalProgress(doneMs, goalMinutes) }
     })
+    // Tasks that are off today don't count toward "goals met" either way.
+    const scheduled = todays.filter((t) => t.goalMinutes > 0)
 
     setText(todayLabel, time.formatLongDate(now))
     setText(totalEl, time.formatHMS(time.totalForDay(sessions, today)))
-    setText(goalsMetEl, `${todays.filter((t) => t.progress.met).length} of ${todays.length}`)
+    setText(goalsMetEl, `${scheduled.filter((t) => t.progress.met).length} of ${scheduled.length}`)
 
-    todays.forEach(({ task, doneMs, progress }) => {
+    todays.forEach(({ task, doneMs, goalMinutes, progress }) => {
       const row = rows.get(task.id)
       if (!row) return
       const { item, week } = row
-      setText(item.percentEl, `${progress.percent}%`)
+      const off = goalMinutes === 0
+      setText(item.percentEl, off ? 'Off today' : `${progress.percent}%`)
       ui.setProgress(item.progress, progress)
+      item.progress.bar.hidden = off
       setText(item.done.dd, time.formatHMS(doneMs))
+      setText(item.goal.dd, off ? 'None today' : time.formatGoal(goalMinutes))
       setText(item.remaining.dt, progress.met ? 'Over goal' : 'Remaining')
-      setText(item.remaining.dd, progress.met ? `+${time.formatShort(progress.overMs)} ✓` : time.formatShort(progress.remainingMs, { ceil: true }))
+      setText(item.remaining.dd, off ? '—' : progress.met ? `+${time.formatShort(progress.overMs)} ✓` : time.formatShort(progress.remainingMs, { ceil: true }))
       item.node.classList.toggle('is-met', progress.met)
+      item.node.classList.toggle('is-off', off)
       days.forEach((dayStart, i) => paintCell(week.cells[i], task, dayStart, time.totalForDay(sessions, dayStart, task.id)))
     })
   }

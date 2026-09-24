@@ -208,6 +208,37 @@
   const formatLongDate = (ms) =>
     new Date(ms).toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })
 
+  // ---- Weekly schedules ---------------------------------------------------
+
+  const WEEKDAYS = Object.freeze([0, 1, 2, 3, 4, 5, 6])
+  const WORKDAYS = Object.freeze([1, 2, 3, 4, 5])
+  const WEEKEND = Object.freeze([0, 6])
+
+  // Localized weekday name for a Date#getDay() index. 2 Jan 2000 was a Sunday.
+  const weekdayName = (day, style = 'short') =>
+    new Date(2000, 0, 2 + day).toLocaleDateString([], { weekday: style })
+
+  // Goal minutes for the local weekday containing `ms`; 0 when the task is off that day.
+  const weekdayGoal = (weekdayGoals, ms) => weekdayGoals[new Date(ms).getDay()] || 0
+
+  const sameDays = (a, b) => a.length === b.length && a.every((day, i) => day === b[i])
+
+  /*
+   * One-line summary: "Every day · 30 min", "Weekdays · 1h", "Mon, Wed, Fri · 45 min",
+   * or "Mon 1h, Tue 30 min" when the goal differs between days.
+   */
+  const describeSchedule = (weekdayGoals) => {
+    const on = WEEKDAYS.filter((day) => weekdayGoals[day] > 0)
+    if (on.length === 0) return 'No days scheduled'
+    const goals = new Set(on.map((day) => weekdayGoals[day]))
+    if (goals.size > 1) return on.map((day) => `${weekdayName(day)} ${formatGoal(weekdayGoals[day])}`).join(', ')
+    const days = sameDays(on, WEEKDAYS) ? 'Every day'
+      : sameDays(on, WORKDAYS) ? 'Weekdays'
+        : sameDays(on, WEEKEND) ? 'Weekends'
+          : on.map((day) => weekdayName(day)).join(', ')
+    return `${days} · ${formatGoal(weekdayGoals[on[0]])}`
+  }
+
   // "9:00 AM – 9:30 AM", or with dates when the session crosses midnight.
   const formatSessionRange = (start, end) => {
     if (isSameDay(start, end)) return `${formatClock(start)} – ${formatClock(end)}`
@@ -254,5 +285,11 @@
     formatLongDate,
     formatSessionRange,
     formatWeekRange,
+    WEEKDAYS,
+    WORKDAYS,
+    WEEKEND,
+    weekdayName,
+    weekdayGoal,
+    describeSchedule,
   })
 })()

@@ -81,7 +81,27 @@
     return progress.overMs >= 1000 ? `Goal met ✓ (+${time.formatShort(progress.overMs)})` : 'Goal met ✓'
   }
 
-  const colorDot = (color) => el('span', { className: 'dot', 'aria-hidden': 'true', style: { '--task-color': color } })
+  /*
+   * CSS variables for anything drawn in a task's color:
+   * --task-color fills, --task-ink is text on top of that fill, and --task-edge
+   * is for lines and text against the page. On a dark color the edge is the
+   * color itself, so it doesn't show; on a light one (White) it's a gray that
+   * keeps the fill and its outline visible on a white page.
+   */
+  const taskColorVars = (color) => {
+    const light = store.needsDarkText(color)
+    return {
+      '--task-color': color,
+      '--task-ink': light ? store.DARK_TEXT : '#ffffff',
+      '--task-edge': light ? 'var(--text-muted)' : color,
+    }
+  }
+
+  // Same as taskColorVars, for nodes that are patched in place rather than rebuilt.
+  const setTaskColor = (node, color) =>
+    Object.entries(taskColorVars(color)).forEach(([prop, value]) => node.style.setProperty(prop, value))
+
+  const colorDot = (color) => el('span', { className: 'dot', 'aria-hidden': 'true', style: taskColorVars(color) })
 
   // ---- Storage warning banner -------------------------------------------
 
@@ -196,6 +216,8 @@
     createProgressBar,
     setProgress,
     remainingText,
+    taskColorVars,
+    setTaskColor,
     colorDot,
     mountChrome,
   })
