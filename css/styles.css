@@ -1,0 +1,1159 @@
+/* Time Tracker: shared styles for every page. */
+
+:root {
+  color-scheme: light;
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-muted: #eef0f3;
+  --text: #1a1d21;
+  --text-muted: #555e68;
+  --border: #d9dee3;
+  /* ≥ 3:1 against white, so input and button edges stay perceivable (WCAG 1.4.11). */
+  --border-strong: #858f99;
+  --grid-line: #e6e9ed;
+  --accent: #2563eb;
+  --accent-strong: #1d4ed8;
+  --accent-soft: #eaf1fe;
+  --focus: #1d4ed8;
+  --danger: #b91c1c;
+  --danger-strong: #991b1b;
+  --danger-soft: #fdf1f1;
+  --danger-border: #f0bcbc;
+  --success: #166534;
+  --success-soft: #e6f4ea;
+  --warning-bg: #fff8e6;
+  --warning-border: #e3ad3f;
+  --warning-text: #5f3f00;
+  --now: #d93025;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 1px 3px rgba(16, 24, 40, 0.07);
+  --font: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  --gutter: 16px;
+  --max: 1080px;
+}
+
+/* ---- Base ---------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Components set `display`, so make sure the hidden attribute always wins. */
+[hidden] {
+  display: none !important;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg);
+}
+
+main {
+  flex: 1;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--accent-strong);
+  text-underline-offset: 2px;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 8px;
+  z-index: 100;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--accent-strong);
+  font-weight: 600;
+  box-shadow: var(--shadow);
+}
+
+.skip-link:focus {
+  top: 8px;
+}
+
+/* ---- Header, banner, footer -------------------------------------------- */
+
+.site-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.header-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 10px var(--gutter);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.brand-mark {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.brand-mark::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 9px;
+  width: 2px;
+  height: 7px;
+  border-radius: 1px;
+  background: #fff;
+  transform-origin: bottom center;
+  transform: rotate(35deg);
+}
+
+.nav-list {
+  display: flex;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nav-list a {
+  display: block;
+  padding: 8px 12px;
+  border-radius: 999px;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.nav-list a:hover {
+  background: var(--surface-muted);
+  color: var(--text);
+}
+
+.nav-list a[aria-current='page'] {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.banner {
+  width: calc(100% - 2 * var(--gutter));
+  max-width: calc(var(--max) - 2 * var(--gutter));
+  margin: 12px auto 0;
+  padding: 10px 14px;
+  border: 1px solid var(--warning-border);
+  border-radius: var(--radius-sm);
+  background: var(--warning-bg);
+  color: var(--warning-text);
+  font-size: 0.925rem;
+}
+
+.site-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 16px max(var(--gutter), calc((100% - var(--max)) / 2 + var(--gutter)));
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.footer-note,
+.data-status {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.data-status:empty {
+  display: none;
+}
+
+/* ---- Layout -------------------------------------------------------------- */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 24px var(--gutter) 40px;
+}
+
+.page-wide {
+  max-width: 1280px;
+}
+
+.page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 16px;
+}
+
+.page-title {
+  font-size: 1.6rem;
+  line-height: 1.2;
+}
+
+.page-lede {
+  color: var(--text-muted);
+}
+
+.section-title {
+  margin-bottom: 12px;
+  font-size: 1.05rem;
+}
+
+.section-note {
+  margin: -4px 0 12px;
+  color: var(--text-muted);
+  font-size: 0.925rem;
+}
+
+.panel {
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 28px 20px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.empty-title {
+  color: var(--text);
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+/* ---- Buttons ------------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: var(--surface-muted);
+}
+
+.btn-primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  border-color: var(--accent-strong);
+  background: var(--accent-strong);
+}
+
+.btn-quiet {
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.btn-quiet:hover {
+  background: var(--surface-muted);
+  color: var(--text);
+}
+
+.btn-quiet-danger:hover {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.btn-danger {
+  border-color: var(--danger);
+  background: var(--danger);
+  color: #fff;
+}
+
+.btn-danger:hover {
+  border-color: var(--danger-strong);
+  background: var(--danger-strong);
+}
+
+/* Filled with the task color when idle; outlined while running, so the two states differ in more than the label. */
+.btn-toggle {
+  min-width: 100px;
+  border: 2px solid var(--task-color);
+  background: var(--task-color);
+  color: #fff;
+}
+
+.btn-toggle:hover {
+  background: var(--task-color);
+  filter: brightness(0.9);
+}
+
+.btn-toggle.is-running,
+.btn-toggle.is-running:hover {
+  background: var(--surface);
+  color: var(--task-color);
+  filter: none;
+}
+
+.btn-toggle.is-running:hover {
+  background: var(--surface-muted);
+}
+
+.btn-icon {
+  width: 40px;
+  padding: 0;
+}
+
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ---- Forms --------------------------------------------------------------- */
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.field label,
+.field legend {
+  padding: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.field legend {
+  margin-bottom: 6px;
+}
+
+.field input[type='text'],
+.field input[type='number'] {
+  width: 100%;
+  min-height: 42px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.field input::placeholder {
+  color: #6b7280;
+}
+
+.field input[aria-invalid='true'] {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 1px var(--danger);
+}
+
+.field-error {
+  color: var(--danger);
+  font-size: 0.85rem;
+}
+
+.field-error:empty {
+  display: none;
+}
+
+.field-submit .btn {
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .form-grid {
+    grid-template-columns: minmax(0, 1fr) 12rem;
+  }
+
+  .field-submit {
+    align-self: end;
+  }
+}
+
+.swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.swatch {
+  position: relative;
+  display: inline-flex;
+  cursor: pointer;
+}
+
+/* The real radio stays in place (invisible) so it remains keyboard and screen-reader operable. */
+.swatch input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.swatch-chip {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--swatch);
+}
+
+.swatch input:checked + .swatch-chip {
+  box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--swatch);
+}
+
+.swatch input:checked + .swatch-chip::after {
+  content: '✓';
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.swatch input:focus-visible + .swatch-chip {
+  outline: 3px solid var(--focus);
+  outline-offset: 5px;
+}
+
+.inline-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--danger-border);
+  border-radius: var(--radius-sm);
+  background: var(--danger-soft);
+}
+
+.confirm-text {
+  font-size: 0.925rem;
+}
+
+/* ---- Shared data bits ---------------------------------------------------- */
+
+.dot {
+  display: inline-block;
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--task-color);
+}
+
+.task-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 1.05rem;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.progress {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--surface-muted);
+}
+
+.progress-fill {
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--task-color, var(--accent));
+  transition: width 0.3s ease;
+}
+
+/* ---- Timers page --------------------------------------------------------- */
+
+.task-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.task-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-top: 4px solid var(--task-color);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.task-card.is-running {
+  box-shadow: 0 0 0 2px var(--task-color), var(--shadow);
+}
+
+.card-view {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.task-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.badge {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  color: var(--task-color);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+.time-label {
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* Tabular digits stop the ticking clock from shifting width every second. */
+.task-time {
+  font-size: 2.25rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.goal-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 8px;
+  font-size: 0.925rem;
+}
+
+.task-goal {
+  color: var(--text-muted);
+}
+
+.task-remaining {
+  font-weight: 600;
+}
+
+.task-card.is-met .task-remaining {
+  color: var(--success);
+}
+
+.card-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ---- Analytics page ------------------------------------------------------ */
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: 16px;
+}
+
+.stat {
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.stat-label {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+#analytics-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.progress-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.progress-item {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.progress-item-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.percent {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.progress-item.is-met .percent {
+  color: var(--success);
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.metric dt {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.metric dd {
+  margin: 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* position: relative contains the absolutely positioned screen-reader text in the cells; otherwise it escapes the scroll box and widens the page. */
+.table-scroll {
+  position: relative;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.week-table {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.925rem;
+}
+
+.week-table th,
+.week-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--grid-line);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.week-table tbody tr:last-child > * {
+  border-bottom: 0;
+}
+
+.week-table thead th {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.th-day {
+  display: block;
+  color: var(--text);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.th-date {
+  display: block;
+}
+
+.week-table th.is-today .th-day {
+  color: var(--accent-strong);
+}
+
+/* The task column stays put while the day columns scroll underneath it. */
+.week-table .col-task {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  max-width: 180px;
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: 1px 0 0 var(--grid-line);
+  text-align: left;
+  text-overflow: ellipsis;
+}
+
+.week-table tbody th {
+  font-weight: 600;
+}
+
+.week-table tbody th .dot {
+  margin-right: 8px;
+  vertical-align: -1px;
+}
+
+.week-table td {
+  font-variant-numeric: tabular-nums;
+}
+
+.week-table td.is-empty {
+  color: var(--text-muted);
+}
+
+.week-table td.is-met {
+  background: var(--success-soft);
+  color: var(--success);
+  font-weight: 700;
+}
+
+.cell-check {
+  margin-left: 4px;
+}
+
+/* ---- Calendar page ------------------------------------------------------- */
+
+.cal-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+}
+
+.cal-nav {
+  display: flex;
+  gap: 6px;
+}
+
+.cal-range {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.cal-scroll {
+  position: relative;
+  height: min(72vh, 820px);
+  min-height: 380px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.cal-grid {
+  --gutter-width: 56px;
+  --day-min-width: 88px;
+  display: grid;
+  grid-template-columns: var(--gutter-width) repeat(7, minmax(var(--day-min-width), 1fr));
+  min-width: calc(var(--gutter-width) + 7 * var(--day-min-width));
+}
+
+/* The upward shadow covers a sub-pixel seam between the scroll box's edge and the sticky header, where blocks could peek through. */
+.cal-corner,
+.cal-day-head {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 -2px 0 var(--surface);
+}
+
+.cal-corner {
+  left: 0;
+  z-index: 5;
+}
+
+.cal-day-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 4px;
+  border-left: 1px solid var(--grid-line);
+}
+
+.cal-dow {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.cal-date {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.cal-day-head.is-today .cal-dow {
+  color: var(--accent-strong);
+}
+
+.cal-day-head.is-today .cal-date {
+  background: var(--accent);
+  color: #fff;
+}
+
+.cal-total {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.cal-gutter {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  height: calc(24 * var(--hour-height));
+  background: var(--surface);
+}
+
+.hour-label {
+  position: absolute;
+  right: 8px;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  white-space: nowrap;
+  transform: translateY(-50%);
+}
+
+.cal-day {
+  position: relative;
+  height: calc(24 * var(--hour-height));
+  border-left: 1px solid var(--grid-line);
+  background-image: linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: 100% var(--hour-height);
+}
+
+.cal-day.is-today {
+  background-color: #f7faff;
+}
+
+.cal-block {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: 3px;
+  padding: 2px 6px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 4px;
+  background: var(--task-color);
+  box-shadow: 0 0 0 1px var(--surface);
+  color: #fff;
+  font-size: 0.75rem;
+  line-height: 1.25;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cal-block:hover,
+.cal-block:focus-visible {
+  z-index: 2;
+}
+
+.cal-block:focus-visible {
+  outline-offset: 1px;
+}
+
+.block-name {
+  max-width: 100%;
+  overflow: hidden;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.block-meta {
+  white-space: nowrap;
+}
+
+.cal-block.size-name {
+  justify-content: center;
+  padding-block: 0;
+}
+
+.cal-block.size-name .block-meta,
+.cal-block.size-none .block-name,
+.cal-block.size-none .block-meta {
+  display: none;
+}
+
+.cal-block.size-none {
+  padding: 0;
+}
+
+/* Dark stripes (never light ones) so the white label keeps its contrast while the session is running. */
+.cal-block.is-running {
+  background-image: repeating-linear-gradient(135deg, rgba(0, 0, 0, 0.14) 0 6px, transparent 6px 12px);
+}
+
+.cal-block.is-running::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: #fff;
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+.now-line {
+  position: absolute;
+  right: 0;
+  left: 0;
+  z-index: 3;
+  height: 2px;
+  background: var(--now);
+  pointer-events: none;
+  transform: translateY(-1px);
+}
+
+.now-line::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -5px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--now);
+}
+
+.cal-popover {
+  position: fixed;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 260px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--task-color);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  box-shadow: 0 8px 24px rgba(16, 24, 40, 0.16);
+  font-size: 0.875rem;
+  pointer-events: none;
+}
+
+.pop-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+}
+
+.pop-range,
+.pop-duration {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Small screens, motion, forced colors -------------------------------- */
+
+@media (max-width: 600px) {
+  .page {
+    gap: 20px;
+    padding-top: 16px;
+  }
+
+  .nav-list a {
+    padding: 6px 10px;
+  }
+
+  .task-time {
+    font-size: 2rem;
+  }
+
+  .stat-value {
+    font-size: 1.6rem;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Windows High Contrast strips background colors, so give color-only marks a visible edge. */
+@media (forced-colors: active) {
+  .cal-block,
+  .progress,
+  .swatch-chip {
+    border: 1px solid CanvasText;
+  }
+
+  .dot,
+  .swatch-chip,
+  .progress-fill {
+    forced-color-adjust: none;
+  }
+}

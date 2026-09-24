@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tests · Time Tracker</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='17' r='13' fill='%232563eb'/><path d='M16 10v7l5 3' stroke='white' stroke-width='3' fill='none' stroke-linecap='round'/></svg>">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .test-summary {
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      font-weight: 700;
+    }
+
+    .test-summary.is-pass {
+      background: var(--success-soft);
+      color: var(--success);
+    }
+
+    .test-summary.is-fail {
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+
+    .test-group h2 {
+      margin: 8px 0;
+      font-size: 1rem;
+    }
+
+    .test-results {
+      display: grid;
+      gap: 4px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .test-results li {
+      padding: 6px 10px;
+      border-radius: 6px;
+      background: var(--surface);
+      font-size: 0.925rem;
+    }
+
+    .test-results li.is-fail {
+      background: var(--danger-soft);
+    }
+
+    .test-mark {
+      display: inline-block;
+      width: 1.5em;
+      font-weight: 700;
+    }
+
+    .is-pass .test-mark {
+      color: var(--success);
+    }
+
+    .is-fail .test-mark {
+      color: var(--danger);
+    }
+
+    .test-error {
+      display: block;
+      margin-left: 1.5em;
+      color: var(--danger);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.85rem;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <main class="page" id="main">
+    <div class="page-head">
+      <h1 class="page-title">Tests</h1>
+      <p class="page-lede"><a href="index.html">Back to Timers</a></p>
+    </div>
+    <p>Assertions against <code>js/time.js</code>, plus the pure reducers in <code>js/storage.js</code>. They never write your saved data. Timestamps are built from local dates, so the results hold in any timezone.</p>
+    <p id="summary" class="test-summary" role="status">Running…</p>
+    <div id="results"></div>
+  </main>
+
+  <script src="js/time.js"></script>
+  <script src="js/storage.js"></script>
+  <script>
+    (function () {
+      'use strict'
+
+      const { time, store } = window.TimeTracker
+      const MIN = 60 * 1000
+      const HOUR = 60 * MIN
+
+      // Local-time timestamp with a 1-based month, e.g. at(2026, 9, 23, 23, 30).
+      const at = (y, mo, d, h = 0, mi = 0, s = 0) => new Date(y, mo - 1, d, h, mi, s).getTime()
+
+      const groups = []
+      const group = (name, body) => {
+        const tests = []
+        body((testName, fn) => tests.push({ name: testName, fn }))
+        groups.push({ name, tests })
+      }
+
+      const show = (v) => JSON.stringify(v)
+      const assertEqual = (actual, expected, label = '') => {
+        if (!Object.is(actual, expected)) throw new Error(`${label ? `${label}: ` : ''}expected ${show(expected)}, got ${show(actual)}`)
+      }
+      const assertDeepEqual = (actual, expected, label = '') => {
+        if (show(actual) !== show(expected)) throw new Error(`${label ? `${label}: ` : ''}expected ${show(expected)}\n got ${show(actual)}`)
+      }
+      const assert = (condition, label) => {
+        if (!condition) throw new Error(label)
+      }
+      const durations = (pieces) => pieces.map((p) => p.end - p.start)
+
+      group('splitByDay (midnight splitting)', (test) => {
+        test('keeps a same-day session as one piece', () => {
+          const session = { id: 's1', taskId: 't', start: at(2026, 9, 23, 9), end: at(2026, 9, 23, 9, 30) }
+          assertDeepEqual(time.splitByDay(session), [{ ...session, dayStart: at(2026, 9, 23) }])
+        })
+
+        test('splits 23:30 → 00:45 at local midnight into 30m + 45m', () => {
+          const pieces = time.splitByDay({ id: 's', taskId: 't', start: at(2026, 9, 23, 23, 30), end: at(2026, 9, 24, 0, 45) })
+          assertEqual(pieces.length, 2, 'piece count')
+          assertDeepEqual(durations(pieces), [30 * MIN, 45 * MIN], 'durations')
+          assertEqual(pieces[0].end, at(2026, 9, 24), 'first piece ends at midnight')
+          assertEqual(pieces[1].start, at(2026, 9, 24), 'second piece starts at midnight')
+          assertDeepEqual(pieces.map((p) => p.dayStart), [at(2026, 9, 23), at(2026, 9, 24)], 'dayStart')
+        })
+
+        test('splits a multi-day session into one piece per day, with full middle days', () => {
+          const pieces = time.splitByDay({ id: 's', taskId: 't', start: at(2026, 9, 21, 22), end: at(2026, 9, 23, 2) })
+          assertEqual(pieces.length, 3, 'piece count')
+          assertEqual(pieces[0].end - pieces[0].start, 2 * HOUR, 'first day')
+          assertEqual(pieces[1].start, at(2026, 9, 22), 'middle piece starts at midnight')
+          assertEqual(pieces[1].end, at(2026, 9, 23), 'middle piece ends at the next midnight')
+          assertEqual(pieces[2].end - pieces[2].start, 2 * HOUR, 'last day')
+        })
+
+        test('a session ending exactly at midnight stays one piece', () => {
+          const pieces = time.splitByDay({ start: at(2026, 9, 23, 23), end: at(2026, 9, 24) })
+          assertEqual(pieces.length, 1)
+        })
+
+        test('returns [] for zero-length, reversed or invalid sessions', () => {
+          assertDeepEqual(time.splitByDay({ start: 1000, end: 1000 }), [], 'zero length')
+          assertDeepEqual(time.splitByDay({ start: 2000, end: 1000 }), [], 'reversed')
+          assertDeepEqual(time.splitByDay({ start: NaN, end: 1000 }), [], 'NaN')
+          assertDeepEqual(time.splitByDay({ start: 0, end: Infinity }), [], 'Infinity')
+        })
+
+        test('never mutates the raw session', () => {
+          const session = Object.freeze({ id: 's', taskId: 't', start: at(2026, 9, 23, 22), end: at(2026, 9, 25, 3) })
+          const before = show(session)
+          time.splitByDay(session)
+          assertEqual(show(session), before)
+        })
+
+        test('pieces are contiguous and add up to the full duration', () => {
+          const session = { start: at(2026, 9, 20, 13, 17), end: at(2026, 9, 26, 8, 5) }
+          const pieces = time.splitByDay(session)
+          pieces.slice(1).forEach((p, i) => assertEqual(p.start, pieces[i].end, `gap after piece ${i}`))
+          assertEqual(durations(pieces).reduce((a, b) => a + b, 0), session.end - session.start, 'sum')
+          pieces.forEach((p) => assertEqual(p.dayStart, time.startOfDay(p.start), 'dayStart matches'))
+        })
+
+        test('an overnight session counts toward both days', () => {
+          const sessions = [{ taskId: 't', start: at(2026, 9, 23, 23), end: at(2026, 9, 24, 1, 30) }]
+          assertEqual(time.totalForDay(sessions, at(2026, 9, 23), 't'), 1 * HOUR, 'first day')
+          assertEqual(time.totalForDay(sessions, at(2026, 9, 24), 't'), 90 * MIN, 'second day')
+        })
+      })
+
+      group("Today's total with an active timer", (test) => {
+        const now = at(2026, 9, 23, 12)
+        const base = {
+          sessions: [
+            { taskId: 't', start: at(2026, 9, 23, 9), end: at(2026, 9, 23, 9, 10) },
+            { taskId: 't', start: at(2026, 9, 22, 9), end: at(2026, 9, 22, 10) },
+            { taskId: 'other', start: at(2026, 9, 23, 10), end: at(2026, 9, 23, 11) },
+          ],
+          active: null,
+        }
+
+        test('counts only today\'s finished sessions when nothing is running', () => {
+          assertEqual(time.todayTotalMs(base, 't', now), 10 * MIN)
+        })
+
+        test('adds the running timer to finished sessions', () => {
+          const state = { ...base, active: { taskId: 't', start: now - 5 * MIN } }
+          assertEqual(time.todayTotalMs(state, 't', now), 15 * MIN)
+        })
+
+        test('an overnight timer counts only from local midnight today', () => {
+          const state = { sessions: [], active: { taskId: 't', start: at(2026, 9, 23, 23) } }
+          const later = at(2026, 9, 24, 1)
+          assertEqual(time.todayTotalMs(state, 't', later), 1 * HOUR, 'today')
+          const sessions = time.withActive(state.sessions, state.active, later)
+          assertEqual(time.totalForDay(sessions, at(2026, 9, 23), 't'), 1 * HOUR, 'yesterday keeps its hour')
+        })
+
+        test('a timer running for several days shows only today\'s part', () => {
+          const state = { sessions: [], active: { taskId: 't', start: at(2026, 9, 20, 8) } }
+          assertEqual(time.todayTotalMs(state, 't', at(2026, 9, 23, 0, 20)), 20 * MIN)
+        })
+
+        test("ignores another task's running timer", () => {
+          const state = { ...base, active: { taskId: 'other', start: now - 30 * MIN } }
+          assertEqual(time.todayTotalMs(state, 't', now), 10 * MIN)
+        })
+
+        test('never goes negative when the clock moves backwards', () => {
+          const state = { sessions: [], active: { taskId: 't', start: now + 5 * MIN } }
+          assertEqual(time.todayTotalMs(state, 't', now), 0)
+        })
+
+        test('totalForRange without a taskId sums every task', () => {
+          assertEqual(time.totalForDay(base.sessions, at(2026, 9, 23)), 70 * MIN)
+        })
+      })
+
+      group('Duration formatting', (test) => {
+        test('formatHMS renders H:MM:SS', () => {
+          assertEqual(time.formatHMS(0), '0:00:00', 'zero')
+          assertEqual(time.formatHMS(59999), '0:00:59', 'floors partial seconds')
+          assertEqual(time.formatHMS(HOUR), '1:00:00', 'one hour')
+          assertEqual(time.formatHMS(10 * HOUR + 10 * MIN + 10000), '10:10:10', 'double digits')
+          assertEqual(time.formatHMS(25 * HOUR), '25:00:00', 'no wrap past 24h')
+          assertEqual(time.formatHMS(-5000), '0:00:00', 'negative clamps to zero')
+        })
+
+        test('formatShort renders compact durations', () => {
+          assertEqual(time.formatShort(0), '0s')
+          assertEqual(time.formatShort(45000), '45s')
+          assertEqual(time.formatShort(12 * MIN + 59000), '12m')
+          assertEqual(time.formatShort(65 * MIN), '1h 5m')
+          assertEqual(time.formatShort(120 * MIN), '2h')
+          assertEqual(time.formatShort(-1), '0s')
+        })
+
+        test('formatShort with ceil rounds "time left" up to whole minutes', () => {
+          assertEqual(time.formatShort(30000, { ceil: true }), '1m')
+          assertEqual(time.formatShort(12 * MIN + 1000, { ceil: true }), '13m')
+          assertEqual(time.formatShort(0, { ceil: true }), '0m')
+        })
+
+        test('formatGoal', () => {
+          assertEqual(time.formatGoal(30), '30 min')
+          assertEqual(time.formatGoal(60), '1h')
+          assertEqual(time.formatGoal(90), '1h 30m')
+        })
+
+        test('goalProgress: under, exactly at, and over the goal', () => {
+          assertDeepEqual(time.goalProgress(10 * MIN, 30), { goalMs: 30 * MIN, percent: 33, remainingMs: 20 * MIN, overMs: 0, met: false }, 'under')
+          assertDeepEqual(time.goalProgress(30 * MIN, 30), { goalMs: 30 * MIN, percent: 100, remainingMs: 0, overMs: 0, met: true }, 'exact')
+          assertDeepEqual(time.goalProgress(45 * MIN, 30), { goalMs: 30 * MIN, percent: 150, remainingMs: 0, overMs: 15 * MIN, met: true }, 'over (uncapped)')
+        })
+
+        test('goalProgress never shows 100% before the goal is met', () => {
+          const p = time.goalProgress(30 * MIN - 1000, 30)
+          assertEqual(p.percent, 99)
+          assertEqual(p.met, false)
+        })
+      })
+
+      group('Date helpers', (test) => {
+        test('startOfWeek returns the Sunday on or before the date', () => {
+          time.daysFrom(at(2026, 9, 20), 7).forEach((day) => {
+            const noon = day + 12 * HOUR
+            assertEqual(time.startOfWeek(noon), at(2026, 9, 20), time.dayKey(day))
+          })
+          assertEqual(new Date(time.startOfWeek(at(2026, 10, 1))).getDay(), 0, 'is a Sunday')
+        })
+
+        test('addDays crosses month and year boundaries', () => {
+          assertEqual(time.addDays(at(2026, 12, 31, 15), 1), at(2027, 1, 1))
+          assertEqual(time.addDays(at(2026, 3, 1, 8), -1), at(2026, 2, 28))
+        })
+
+        test('every local day is 23, 24 or 25 hours long (DST-safe)', () => {
+          const lengths = time.daysFrom(at(2026, 1, 1), 400).map((d) => (time.addDays(d, 1) - d) / HOUR)
+          lengths.forEach((h, i) => assert([23, 24, 25].includes(h), `day ${i} is ${h}h`))
+        })
+
+        test('dayKey is zero-padded YYYY-MM-DD in local time', () => {
+          assertEqual(time.dayKey(at(2026, 3, 5, 23, 59)), '2026-03-05')
+        })
+
+        test('lastNDays ends with today, oldest first', () => {
+          const days = time.lastNDays(at(2026, 9, 23, 15), 7)
+          assertEqual(days.length, 7)
+          assertEqual(days[0], at(2026, 9, 17), 'first')
+          assertEqual(days[6], at(2026, 9, 23), 'last')
+        })
+
+        test('minutesSinceMidnight uses wall-clock time', () => {
+          assertEqual(time.minutesSinceMidnight(at(2026, 9, 23, 9, 30)), 570)
+          assertEqual(time.minutesSinceMidnight(at(2026, 9, 23, 0, 0, 30)), 0.5)
+        })
+      })
+
+      group('layoutIntervals (side-by-side overlaps)', (test) => {
+        test('non-overlapping intervals are full width', () => {
+          const out = time.layoutIntervals([{ start: 0, end: 30 }, { start: 60, end: 90 }])
+          assertDeepEqual(out.map((o) => [o.col, o.cols]), [[0, 1], [0, 1]])
+        })
+
+        test('two overlapping intervals share the width', () => {
+          const out = time.layoutIntervals([{ start: 0, end: 60 }, { start: 30, end: 90 }])
+          assertDeepEqual(out.map((o) => [o.col, o.cols]), [[0, 2], [1, 2]])
+        })
+
+        test('touching intervals do not count as overlapping', () => {
+          const out = time.layoutIntervals([{ start: 0, end: 60 }, { start: 60, end: 90 }])
+          assertDeepEqual(out.map((o) => [o.col, o.cols]), [[0, 1], [0, 1]])
+        })
+
+        test('a chain reuses freed columns within one cluster', () => {
+          const out = time.layoutIntervals([{ start: 0, end: 60 }, { start: 30, end: 90 }, { start: 70, end: 120 }])
+          assertDeepEqual(out.map((o) => [o.col, o.cols]), [[0, 2], [1, 2], [0, 2]])
+        })
+
+        test('keeps input order and extra fields', () => {
+          const out = time.layoutIntervals([{ id: 'b', start: 50, end: 60 }, { id: 'a', start: 0, end: 10 }])
+          assertDeepEqual(out.map((o) => o.id), ['b', 'a'])
+        })
+      })
+
+      group('Data model (storage.js reducers)', (test) => {
+        const task = (id, extra = {}) => ({ id, name: id.toUpperCase(), color: '#2563eb', dailyGoalMinutes: 30, createdAt: 0, ...extra })
+
+        test('normalize falls back to an empty state for garbage', () => {
+          const garbage = [null, undefined, 'x', 42, [], { tasks: 'nope' }]
+          garbage.forEach((raw) => assertDeepEqual(store.normalize(raw), store.emptyState(), show(raw)))
+        })
+
+        test('normalize drops invalid tasks, orphan sessions and a dangling active timer', () => {
+          const state = store.normalize({
+            tasks: [task('a', { dailyGoalMinutes: 5000, color: 'red' }), { id: '', name: 'x' }, { id: 'b', name: '   ' }, task('a')],
+            sessions: [
+              { id: 's1', taskId: 'a', start: 1, end: 2 },
+              { id: 's2', taskId: 'ghost', start: 1, end: 2 },
+              { id: 's3', taskId: 'a', start: 5, end: 5 },
+              { taskId: 'a', start: '1', end: 2 },
+            ],
+            active: { taskId: 'ghost', start: 1 },
+          })
+          assertEqual(state.tasks.length, 1, 'one valid, unique task')
+          assertEqual(state.tasks[0].dailyGoalMinutes, 1440, 'goal clamped')
+          assertEqual(state.tasks[0].color, store.PALETTE[0].value, 'bad color replaced')
+          assertDeepEqual(state.sessions.map((s) => s.id), ['s1'], 'only the valid session survives')
+          assertEqual(state.active, null, 'active for a missing task dropped')
+        })
+
+        test('startTask closes the running session before starting another', () => {
+          const s0 = { ...store.emptyState(), tasks: [task('a'), task('b')], active: { taskId: 'a', start: 1000 } }
+          const s1 = store.startTask(s0, 'b', 5000, 'sess-1')
+          assertDeepEqual(s1.sessions, [{ id: 'sess-1', taskId: 'a', start: 1000, end: 5000 }], 'a closed')
+          assertDeepEqual(s1.active, { taskId: 'b', start: 5000 }, 'b running')
+          assert(s0.active.taskId === 'a' && s0.sessions.length === 0, 'input state untouched')
+        })
+
+        test('startTask on the task that is already running changes nothing', () => {
+          const s0 = { ...store.emptyState(), tasks: [task('a')], active: { taskId: 'a', start: 1000 } }
+          assertEqual(store.startTask(s0, 'a', 5000), s0)
+        })
+
+        test('pauseActive records the session; a zero-length one is dropped', () => {
+          const s0 = { ...store.emptyState(), tasks: [task('a')], active: { taskId: 'a', start: 1000 } }
+          const paused = store.pauseActive(s0, 4000, 'p1')
+          assertDeepEqual(paused.sessions, [{ id: 'p1', taskId: 'a', start: 1000, end: 4000 }])
+          assertEqual(paused.active, null)
+          assertEqual(store.pauseActive(s0, 500).sessions.length, 0, 'clock went backwards')
+        })
+
+        test('deleteTask removes the running task, its sessions and the active timer', () => {
+          const s0 = {
+            ...store.emptyState(),
+            tasks: [task('a'), task('b')],
+            sessions: [{ id: '1', taskId: 'a', start: 1, end: 2 }, { id: '2', taskId: 'b', start: 1, end: 2 }],
+            active: { taskId: 'a', start: 10 },
+          }
+          const s1 = store.deleteTask(s0, 'a')
+          assertDeepEqual(s1.tasks.map((t) => t.id), ['b'])
+          assertDeepEqual(s1.sessions.map((s) => s.id), ['2'])
+          assertEqual(s1.active, null)
+        })
+
+        test('updateTask validates edits and keeps id and createdAt', () => {
+          const s0 = { ...store.emptyState(), tasks: [task('a', { createdAt: 99 })] }
+          const s1 = store.updateTask(s0, 'a', { name: '  Reading  ', dailyGoalMinutes: 45, id: 'hijack', createdAt: 1 })
+          assertDeepEqual(s1.tasks[0], { id: 'a', name: 'Reading', color: '#2563eb', dailyGoalMinutes: 45, createdAt: 99 })
+          assertEqual(store.updateTask(s0, 'a', { name: '' }).tasks[0].name, 'A', 'blank name rejected')
+        })
+      })
+
+      // ---- Run and report ------------------------------------------------------
+
+      const run = groups.map(({ name, tests }) => ({
+        name,
+        results: tests.map(({ name: testName, fn }) => {
+          try {
+            fn()
+            return { name: testName, ok: true }
+          } catch (error) {
+            return { name: testName, ok: false, message: error instanceof Error ? error.message : String(error) }
+          }
+        }),
+      }))
+
+      const all = run.flatMap((g) => g.results)
+      const failed = all.filter((r) => !r.ok)
+      const summary = document.getElementById('summary')
+      summary.textContent = failed.length
+        ? `✗ ${failed.length} of ${all.length} tests failed`
+        : `✓ All ${all.length} tests passed`
+      summary.classList.add(failed.length ? 'is-fail' : 'is-pass')
+      document.title = `${failed.length ? '✗' : '✓'} ${all.length - failed.length}/${all.length} · Tests · Time Tracker`
+
+      const container = document.getElementById('results')
+      run.forEach((g) => {
+        const section = document.createElement('section')
+        section.className = 'test-group'
+        const heading = document.createElement('h2')
+        heading.textContent = g.name
+        const list = document.createElement('ul')
+        list.className = 'test-results'
+        g.results.forEach((r) => {
+          const item = document.createElement('li')
+          item.className = r.ok ? 'is-pass' : 'is-fail'
+          const mark = document.createElement('span')
+          mark.className = 'test-mark'
+          mark.setAttribute('aria-hidden', 'true')
+          mark.textContent = r.ok ? '✓' : '✗'
+          const status = document.createElement('span')
+          status.className = 'visually-hidden'
+          status.textContent = r.ok ? 'Passed: ' : 'Failed: '
+          item.append(mark, status, r.name)
+          if (!r.ok) {
+            const err = document.createElement('span')
+            err.className = 'test-error'
+            err.textContent = r.message
+            item.append(err)
+          }
+          list.append(item)
+        })
+        section.append(heading, list)
+        container.append(section)
+      })
+
+      console[failed.length ? 'error' : 'log'](`time.js tests: ${all.length - failed.length}/${all.length} passed`)
+    })()
+  </script>
+</body>
+</html>
