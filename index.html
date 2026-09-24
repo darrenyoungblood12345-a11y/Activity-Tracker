@@ -1,87 +1,114 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Timers · Time Tracker</title>
-  <meta name="description" content="Track time on daily tasks with pausable stopwatches and daily goals.">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='17' r='13' fill='%232563eb'/><path d='M16 10v7l5 3' stroke='white' stroke-width='3' fill='none' stroke-linecap='round'/></svg>">
-  <script src="js/theme.js"></script>
-  <link rel="stylesheet" href="css/styles.css">
-  <script defer src="js/time.js"></script>
-  <script defer src="js/storage.js"></script>
-  <script defer src="js/ui.js"></script>
-  <script defer src="js/timers.js"></script>
-</head>
-<body>
-  <a class="skip-link" href="#main">Skip to content</a>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Timers · Time Tracker</title>
+		<meta
+			name="description"
+			content="Track time on daily tasks with pausable stopwatches and daily goals."
+		/>
+		<link
+			rel="icon"
+			href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='17' r='13' fill='%232563eb'/><path d='M16 10v7l5 3' stroke='white' stroke-width='3' fill='none' stroke-linecap='round'/></svg>"
+		/>
+		<script src="js/theme.js"></script>
+		<link rel="stylesheet" href="css/styles.css" />
+		<script defer src="js/time.js"></script>
+		<script defer src="js/storage.js"></script>
+		<script defer src="js/ui.js"></script>
+		<script defer src="js/timers.js"></script>
+	</head>
+	<body>
+		<a class="skip-link" href="#main">Skip to content</a>
 
-  <header class="site-header">
-    <div class="header-inner">
-      <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true"></span>Time Tracker</a>
-      <nav aria-label="Main">
-        <ul class="nav-list">
-          <li><a href="index.html" aria-current="page">Timers</a></li>
-          <li><a href="analytics/index.html">Analytics</a></li>
-          <li><a href="calendar/index.html">Calendar</a></li>
-          <li><a href="settings/index.html">Settings</a></li>
-        </ul>
-      </nav>
-    </div>
-  </header>
+		<header class="site-header">
+			<div class="header-inner">
+				<a class="brand" href="index.html"
+					><span class="brand-mark" aria-hidden="true"></span>Activity
+					Tracker</a
+				>
+				<nav aria-label="Main">
+					<ul class="nav-list">
+						<li><a href="index.html" aria-current="page">Activities</a></li>
+						<li><a href="analytics/index.html">Analytics</a></li>
+						<li><a href="calendar/index.html">Calendar</a></li>
+						<li><a href="settings/index.html">Settings</a></li>
+					</ul>
+				</nav>
+			</div>
+		</header>
 
-  <div id="storage-warning" class="banner" role="status" hidden></div>
+		<div id="storage-warning" class="banner" role="status" hidden></div>
 
-  <main id="main" class="page">
-    <div class="page-head">
-      <h1 class="page-title">Timers</h1>
-      <p class="page-lede" id="today-label"></p>
-    </div>
+		<main id="main" class="page">
+			<div class="page-head">
+				<h1 class="page-title">Activities</h1>
+				<p class="page-lede" id="today-label"></p>
+			</div>
 
-    <section class="panel add-task" aria-labelledby="add-task-heading">
-      <h2 id="add-task-heading" class="section-title">Add a task</h2>
-      <form id="add-task-form" novalidate>
-        <div class="form-grid">
-          <div class="field field-name">
-            <label for="new-task-name">Task name</label>
-            <input id="new-task-name" name="name" type="text" maxlength="60" autocomplete="off" placeholder="e.g. Reading" required aria-describedby="new-task-name-error">
-            <p class="field-error" id="new-task-name-error"></p>
-          </div>
-          <!-- Replaced by the schedule editor from js/timers.js, which each task's edit form also uses. -->
-          <div id="new-task-schedule" class="field-schedule"></div>
-          <fieldset class="field field-color">
-            <legend>Color</legend>
-            <div class="swatches" id="new-task-colors"></div>
-          </fieldset>
-          <div class="field field-submit">
-            <button type="submit" class="btn btn-primary">Add task</button>
-          </div>
-        </div>
-      </form>
-    </section>
+			<section class="panel add-task" aria-labelledby="add-task-heading">
+				<h2 id="add-task-heading" class="section-title">Add a task</h2>
+				<form id="add-task-form" novalidate>
+					<div class="form-grid">
+						<div class="field field-name">
+							<label for="new-task-name">Task name</label>
+							<input
+								id="new-task-name"
+								name="name"
+								type="text"
+								maxlength="60"
+								autocomplete="off"
+								placeholder="e.g. Reading"
+								required
+								aria-describedby="new-task-name-error"
+							/>
+							<p class="field-error" id="new-task-name-error"></p>
+						</div>
+						<!-- Replaced by the schedule editor from js/timers.js, which each task's edit form also uses. -->
+						<div id="new-task-schedule" class="field-schedule"></div>
+						<fieldset class="field field-color">
+							<legend>Color</legend>
+							<div class="swatches" id="new-task-colors"></div>
+						</fieldset>
+						<div class="field field-submit">
+							<button type="submit" class="btn btn-primary">Add task</button>
+						</div>
+					</div>
+				</form>
+			</section>
 
-    <section aria-labelledby="tasks-heading">
-      <h2 id="tasks-heading" class="section-title">Today</h2>
-      <div id="empty-state" class="empty-state" hidden>
-        <p class="empty-title">No tasks yet</p>
-        <p>Add your first task above, such as “Reading, 30 minutes a day”, then press <strong>Start</strong>.</p>
-      </div>
-      <div id="none-today" class="empty-state" hidden>
-        <p class="empty-title">Nothing scheduled today</p>
-        <p>Your tasks for other days are listed below, and you can still start any of them.</p>
-      </div>
-      <ul id="task-list" class="task-grid"></ul>
-    </section>
+			<section aria-labelledby="tasks-heading">
+				<h2 id="tasks-heading" class="section-title">Today</h2>
+				<div id="empty-state" class="empty-state" hidden>
+					<p class="empty-title">No tasks yet</p>
+					<p>
+						Add your first task above, such as “Reading, 30 minutes a day”, then
+						press <strong>Start</strong>.
+					</p>
+				</div>
+				<div id="none-today" class="empty-state" hidden>
+					<p class="empty-title">Nothing scheduled today</p>
+					<p>
+						Your tasks for other days are listed below, and you can still start
+						any of them.
+					</p>
+				</div>
+				<ul id="task-list" class="task-grid"></ul>
+			</section>
 
-    <section id="other-section" aria-labelledby="other-heading" hidden>
-      <h2 id="other-heading" class="section-title">Not scheduled today</h2>
-      <p class="section-note">You can still track time on these. It just won't count toward a goal today.</p>
-      <ul id="other-task-list" class="task-grid"></ul>
-    </section>
+			<section id="other-section" aria-labelledby="other-heading" hidden>
+				<h2 id="other-heading" class="section-title">Not scheduled today</h2>
+				<p class="section-note">
+					You can still track time on these. It just won't count toward a goal
+					today.
+				</p>
+				<ul id="other-task-list" class="task-grid"></ul>
+			</section>
 
-    <p id="live-status" class="visually-hidden" role="status"></p>
-  </main>
+			<p id="live-status" class="visually-hidden" role="status"></p>
+		</main>
 
-  <footer class="site-footer" id="site-footer"></footer>
-</body>
+		<footer class="site-footer" id="site-footer"></footer>
+	</body>
 </html>
