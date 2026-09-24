@@ -1,78 +1,103 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Analytics · Time Tracker</title>
-  <meta name="description" content="Progress toward each daily goal, today and over the last 7 days.">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='17' r='13' fill='%232563eb'/><path d='M16 10v7l5 3' stroke='white' stroke-width='3' fill='none' stroke-linecap='round'/></svg>">
-  <script src="../js/theme.js"></script>
-  <link rel="stylesheet" href="../css/styles.css">
-  <script defer src="../js/time.js"></script>
-  <script defer src="../js/storage.js"></script>
-  <script defer src="../js/ui.js"></script>
-  <script defer src="../js/analytics.js"></script>
-</head>
-<body>
-  <a class="skip-link" href="#main">Skip to content</a>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Analytics · Time Tracker</title>
+		<meta
+			name="description"
+			content="Progress toward each daily goal, today and over the last 7 days."
+		/>
+		<link
+			rel="icon"
+			href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='17' r='13' fill='%232563eb'/><path d='M16 10v7l5 3' stroke='white' stroke-width='3' fill='none' stroke-linecap='round'/></svg>"
+		/>
+		<script src="../js/theme.js"></script>
+		<link rel="stylesheet" href="../css/styles.css" />
+		<script defer src="../js/time.js"></script>
+		<script defer src="../js/storage.js"></script>
+		<script defer src="../js/ui.js"></script>
+		<script defer src="../js/analytics.js"></script>
+	</head>
+	<body>
+		<a class="skip-link" href="#main">Skip to content</a>
 
-  <header class="site-header">
-    <div class="header-inner">
-      <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true"></span>Time Tracker</a>
-      <nav aria-label="Main">
-        <ul class="nav-list">
-          <li><a href="../index.html">Timers</a></li>
-          <li><a href="../analytics/index.html" aria-current="page">Analytics</a></li>
-          <li><a href="../calendar/index.html">Calendar</a></li>
-          <li><a href="../settings/index.html">Settings</a></li>
-        </ul>
-      </nav>
-    </div>
-  </header>
+		<header class="site-header">
+			<div class="header-inner">
+				<a class="brand" href="../index.html"
+					><span class="brand-mark" aria-hidden="true"></span>Time Tracker</a
+				>
+				<nav aria-label="Main">
+					<ul class="nav-list">
+						<li><a href="../index.html">Activities</a></li>
+						<li>
+							<a href="../analytics/index.html" aria-current="page"
+								>Analytics</a
+							>
+						</li>
+						<li><a href="../calendar/index.html">Calendar</a></li>
+						<li><a href="../settings/index.html">Settings</a></li>
+					</ul>
+				</nav>
+			</div>
+		</header>
 
-  <div id="storage-warning" class="banner" role="status" hidden></div>
+		<div id="storage-warning" class="banner" role="status" hidden></div>
 
-  <main id="main" class="page">
-    <div class="page-head">
-      <h1 class="page-title">Analytics</h1>
-      <p class="page-lede" id="today-label"></p>
-    </div>
+		<main id="main" class="page">
+			<div class="page-head">
+				<h1 class="page-title">Analytics</h1>
+				<p class="page-lede" id="today-label"></p>
+			</div>
 
-    <section class="stats" aria-label="Today's summary">
-      <div class="stat">
-        <p class="stat-label">Tracked today</p>
-        <p class="stat-value" id="total-today">0:00:00</p>
-      </div>
-      <div class="stat">
-        <p class="stat-label">Goals met</p>
-        <p class="stat-value" id="goals-met">0 of 0</p>
-      </div>
-    </section>
+			<section class="stats" aria-label="Today's summary">
+				<div class="stat">
+					<p class="stat-label">Tracked today</p>
+					<p class="stat-value" id="total-today">0:00:00</p>
+				</div>
+				<div class="stat">
+					<p class="stat-label">Goals met</p>
+					<p class="stat-value" id="goals-met">0 of 0</p>
+				</div>
+			</section>
 
-    <div id="empty-state" class="empty-state" hidden>
-      <p class="empty-title">Nothing to analyze yet</p>
-      <p>Create a task on the <a href="../index.html">Timers</a> page and start its stopwatch. Your progress will show up here.</p>
-    </div>
+			<div id="empty-state" class="empty-state" hidden>
+				<p class="empty-title">Nothing to analyze yet</p>
+				<p>
+					Create a task on the <a href="../index.html">Activities</a> page and
+					start its stopwatch. Your progress will show up here.
+				</p>
+			</div>
 
-    <div id="analytics-content">
-      <section aria-labelledby="today-heading">
-        <h2 id="today-heading" class="section-title">Today by task</h2>
-        <ul id="progress-list" class="progress-list"></ul>
-      </section>
+			<div id="analytics-content">
+				<section aria-labelledby="today-heading">
+					<h2 id="today-heading" class="section-title">Today by task</h2>
+					<ul id="progress-list" class="progress-list"></ul>
+				</section>
 
-      <section aria-labelledby="week-heading">
-        <h2 id="week-heading" class="section-title">Last 7 days</h2>
-        <p class="section-note" id="week-note">Percent of each day's goal reached. Days where the goal was met are marked ✓. Days a task isn't scheduled show — (or any time you tracked anyway).</p>
-        <div class="table-scroll" id="week-scroll" role="region" aria-labelledby="week-heading" tabindex="0">
-          <table class="week-table" aria-describedby="week-note">
-            <thead id="week-head"></thead>
-            <tbody id="week-body"></tbody>
-          </table>
-        </div>
-      </section>
-    </div>
-  </main>
+				<section aria-labelledby="week-heading">
+					<h2 id="week-heading" class="section-title">Last 7 days</h2>
+					<p class="section-note" id="week-note">
+						Percent of each day's goal reached. Days where the goal was met are
+						marked ✓. Days a task isn't scheduled show — (or any time you
+						tracked anyway).
+					</p>
+					<div
+						class="table-scroll"
+						id="week-scroll"
+						role="region"
+						aria-labelledby="week-heading"
+						tabindex="0"
+					>
+						<table class="week-table" aria-describedby="week-note">
+							<thead id="week-head"></thead>
+							<tbody id="week-body"></tbody>
+						</table>
+					</div>
+				</section>
+			</div>
+		</main>
 
-  <footer class="site-footer" id="site-footer"></footer>
-</body>
+		<footer class="site-footer" id="site-footer"></footer>
+	</body>
 </html>
