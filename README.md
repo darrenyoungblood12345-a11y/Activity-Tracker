@@ -7,6 +7,7 @@ A small static site for tracking time on daily tasks. Each task has its own stop
 | **Timers** (`/index.html`) | Create tasks, choose the days they happen and each day's goal, and start or pause each stopwatch. Only one runs at a time. Tasks that aren't scheduled today are listed separately and can still be started. |
 | **Analytics** (`/analytics/`) | Today's total, goals met, per-task progress and a 7-day goal table. Days a task isn't scheduled don't count against it. |
 | **Calendar** (`/calendar/`) | A Google Calendar–style week view with one block per tracked session. |
+| **Settings** (`/settings/`) | Choose the Light theme, the Dark theme or Match device, and see an estimate of how much browser storage the tracker uses. |
 
 ## Run it locally
 
@@ -20,17 +21,17 @@ npx serve .
 python3 -m http.server 8000
 ```
 
-Use a server instead of opening the files with `file://`. Some browsers give every `file://` page its own separate storage, so the three pages wouldn't see each other's data.
+Use a server instead of opening the files with `file://`. Some browsers give every `file://` page its own separate storage, so the pages wouldn't see each other's data.
 
 To deploy, upload the folder as-is to GitHub Pages, Netlify or any static host. All paths are relative, so it also works from a sub-path such as `username.github.io/time-tracker/`.
 
 ## Tests
 
-Open **`/tests.html`** on the same server. It runs assertions against `js/time.js`, covering midnight splitting, today's total with a running timer, duration formatting, overlap layout, DST-safe day math and weekly schedules. It also tests the pure reducers, the version 1 → 2 migration and the text-contrast helper in `js/storage.js`. Results appear on the page, and the tab title shows the pass count. The tests never write your saved data.
+Open **`/tests.html`** on the same server. It runs assertions against `js/time.js`, covering midnight splitting, today's total with a running timer, duration formatting, overlap layout, DST-safe day math and weekly schedules. It also tests the pure reducers, the version 1 → 2 migration, the text-contrast and dark-theme color helpers, and the storage-estimate helpers in `js/storage.js`. Results appear on the page, and the tab title shows the pass count. The tests never write your saved data.
 
 ## How data is stored
 
-Everything is stored under one `localStorage` key, `timeTracker.v1`. The key keeps its name across upgrades, and the `version` field inside it tracks the shape:
+All tracked data is stored under one `localStorage` key, `timeTracker.v1`. The key keeps its name across upgrades, and the `version` field inside it tracks the shape:
 
 ```js
 {
@@ -50,6 +51,8 @@ Everything is stored under one `localStorage` key, `timeTracker.v1`. The key kee
 - **Multiple tabs stay in sync** through the browser's `storage` event. Each change re-reads the latest saved state before writing, so one tab can't overwrite another tab's changes.
 - **Corrupt data** is replaced with an empty state instead of crashing the app. The unreadable original is kept under `timeTracker.v1.corrupt`, and a banner explains what happened.
 - **If storage is blocked or full**, the app keeps working in memory and shows a warning banner. Use Export to save a copy of your data.
+- **The theme** is saved separately under `timeTracker.theme` (`"light"`, `"dark"` or `"system"`, and Light when unset). It's a preference for this browser, so Export and Import leave it alone. It syncs across open tabs like everything else.
+- **The storage estimate** on the Settings page adds up the characters of every key and value saved at this address and compares the total with the roughly 5 MB that browsers allow per site. Browsers don't report localStorage usage, so it's an estimate. Keys from other apps served from the same address, such as other `localhost` projects, count against the same limit and appear on a separate line.
 
 ### Backup, restore and reset
 
@@ -63,17 +66,20 @@ Everything is stored under one `localStorage` key, `timeTracker.v1`. The key kee
 index.html              Timers page (home)
 analytics/index.html    Analytics page
 calendar/index.html     Calendar page
+settings/index.html     Settings page
 css/styles.css          Shared styles
+js/theme.js             Applies the saved theme before the first paint
 js/time.js              Pure date/duration helpers (no DOM)
 js/storage.js           Data model, validation, load/save, cross-tab sync
 js/ui.js                Shared page chrome: DOM helper, ticker, banner, export/import
 js/timers.js            Timers page
 js/analytics.js         Analytics page
 js/calendar.js          Calendar page
+js/settings.js          Settings page
 tests.html              In-browser test runner
 ```
 
-Scripts are classic `<script defer>` tags that load in this order: `time.js`, `storage.js`, `ui.js`, then the page script. Each script adds its part to one global, `window.TimeTracker`.
+Scripts are classic `<script defer>` tags that load in this order: `time.js`, `storage.js`, `ui.js`, then the page script. Each script adds its part to one global, `window.TimeTracker`. The exception is `theme.js`, a plain blocking `<script>` placed before the stylesheet in `<head>`, so the page never flashes the wrong theme while it loads.
 
 ## Notes
 
@@ -81,3 +87,4 @@ Scripts are classic `<script defer>` tags that load in this order: `time.js`, `s
 - Calendar blocks are placed by wall-clock time, so they line up with the hour labels even on days when DST starts or ends. Their labels still show real elapsed time.
 - Goals and schedules have no history. Editing either recalculates progress for every day, including the 7-day table.
 - Text on a task color switches between white and dark by contrast, so light colors such as White stay readable on buttons and calendar blocks.
+- Task colors fill the same way in both themes. In the dark theme, outlines and text drawn in a task's color use a lighter tint of it (`darkEdge` in `js/storage.js`), so dark colors such as Charcoal stay visible. The switch uses CSS `light-dark()` (Chrome 123+, Safari 17.5+, Firefox 120+), so changing themes restyles the page without a reload.

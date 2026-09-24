@@ -20,6 +20,14 @@
   const DEFAULT_GOAL_MINUTES = 30
   const DAYS_PER_WEEK = 7
   const DARK_TEXT = '#1a1d21'
+  // The dark theme's --surface-muted in css/styles.css.
+  const DARK_SURFACE_MUTED = '#23272d'
+  /*
+   * Major browsers let each site keep about 5 million characters of keys and
+   * values in localStorage, so usage is measured in characters and shown as
+   * bytes. It's an estimate: no browser reports localStorage usage directly.
+   */
+  const STORAGE_LIMIT = 5 * 1024 * 1024
 
   /*
    * The first eight are dark enough that white text on each passes WCAG AA
@@ -61,6 +69,24 @@
 
   // True when the site's dark text reads better on this color than white does.
   const needsDarkText = (hex) => contrastRatio(hex, DARK_TEXT) > contrastRatio(hex, '#ffffff')
+
+  // Moves each channel `t` of the way toward white (0 = unchanged, 1 = white).
+  const tintHex = (hex, t) =>
+    `#${[1, 3, 5]
+      .map((i) => {
+        const c = parseInt(hex.slice(i, i + 2), 16)
+        return Math.round(c + (255 - c) * t).toString(16).padStart(2, '0')
+      })
+      .join('')}`
+
+  /*
+   * The task color for lines and text on the dark theme. The palette is dark
+   * so white text reads on it, which also makes it too dark to read on a dark
+   * page, so it's tinted toward white just enough to reach 4.5:1 against the
+   * lightest background task text sits on there. Pure white always qualifies.
+   */
+  const darkEdge = (hex) =>
+    Array.from({ length: 21 }, (_, i) => tintHex(hex, i / 20)).find((c) => contrastRatio(c, DARK_SURFACE_MUTED) >= 4.5)
 
   const emptyState = () => ({ version: SCHEMA_VERSION, tasks: [], sessions: [], active: null })
 
@@ -298,6 +324,31 @@
 
   const replaceAll = (state) => update(() => normalize(state))
 
+  // ---- Usage estimate -------------------------------------------------------
+
+  // [[key, value], …] → [{ key, size }], where size counts the characters of both.
+  const measureEntries = (entries) => entries.map(([key, value]) => ({ key, size: key.length + value.length }))
+
+  // Everything stored at this origin, other apps' keys included, since they share the quota. Null if storage can't be read.
+  const estimateUsage = () => {
+    try {
+      const { localStorage } = window
+      const keys = Array.from({ length: localStorage.length }, (_, i) => localStorage.key(i)).filter((k) => k !== null)
+      const items = measureEntries(keys.map((key) => [key, localStorage.getItem(key) || '']))
+      return { items, total: items.reduce((sum, item) => sum + item.size, 0), limit: STORAGE_LIMIT }
+    } catch {
+      return null
+    }
+  }
+
+  // 0 B, 812 B, 4.2 KB, 18 KB, 1.3 MB: one decimal only while it's a single digit.
+  const formatSize = (bytes) => {
+    const [value, unit] =
+      bytes < 1024 ? [bytes, 'B'] : bytes < 1024 * 1024 ? [bytes / 1024, 'KB'] : [bytes / (1024 * 1024), 'MB']
+    const rounded = unit === 'B' || value >= 9.95 ? Math.round(value) : Math.round(value * 10) / 10
+    return `${rounded} ${unit}`
+  }
+
   // ---- Init -----------------------------------------------------------------
 
   if (probeStorage()) {
@@ -311,13 +362,18 @@
   window.TimeTracker = window.TimeTracker || {}
   window.TimeTracker.store = Object.freeze({
     STORAGE_KEY,
+    CORRUPT_BACKUP_KEY,
+    STORAGE_LIMIT,
     PALETTE,
     NAME_MAX_LENGTH,
     GOAL_MIN,
     GOAL_MAX,
     DEFAULT_GOAL_MINUTES,
     DARK_TEXT,
+    DARK_SURFACE_MUTED,
+    contrastRatio,
     needsDarkText,
+    darkEdge,
     emptyState,
     normalize,
     addTask,
@@ -334,5 +390,8 @@
     exportJSON,
     parseImport,
     replaceAll,
+    measureEntries,
+    estimateUsage,
+    formatSize,
   })
 })()

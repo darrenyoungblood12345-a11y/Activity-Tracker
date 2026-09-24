@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Tests · Time Tracker</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='17' r='13' fill='%232563eb'/><path d='M16 10v7l5 3' stroke='white' stroke-width='3' fill='none' stroke-linecap='round'/></svg>">
+  <script src="js/theme.js"></script>
   <link rel="stylesheet" href="css/styles.css">
   <style>
     .test-summary {
@@ -20,7 +21,7 @@
 
     .test-summary.is-fail {
       background: var(--danger-soft);
-      color: var(--danger);
+      color: var(--danger-text);
     }
 
     .test-group h2 {
@@ -58,13 +59,13 @@
     }
 
     .is-fail .test-mark {
-      color: var(--danger);
+      color: var(--danger-text);
     }
 
     .test-error {
       display: block;
       margin-left: 1.5em;
-      color: var(--danger);
+      color: var(--danger-text);
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
       font-size: 0.85rem;
       white-space: pre-wrap;
@@ -77,7 +78,7 @@
       <h1 class="page-title">Tests</h1>
       <p class="page-lede"><a href="index.html">Back to Timers</a></p>
     </div>
-    <p>Assertions against <code>js/time.js</code>, plus the pure reducers, migration and color helpers in <code>js/storage.js</code>. They never write your saved data. Timestamps are built from local dates, so the results hold in any timezone.</p>
+    <p>Assertions against <code>js/time.js</code>, plus the pure reducers, migration, color and storage-estimate helpers in <code>js/storage.js</code>. They never write your saved data. Timestamps are built from local dates, so the results hold in any timezone.</p>
     <p id="summary" class="test-summary" role="status">Running…</p>
     <div id="results"></div>
   </main>
@@ -430,6 +431,50 @@
           assertEqual(store.needsDarkText('#fde047'), true, 'yellow')
           assertEqual(store.needsDarkText('#e5e7eb'), true, 'light gray')
           assertEqual(store.needsDarkText('#000000'), false, 'black')
+        })
+
+        test('darkEdge makes every palette color readable as text on the dark theme (≥ 4.5:1)', () => {
+          store.PALETTE.forEach((c) => {
+            const edge = store.darkEdge(c.value)
+            assert(/^#[0-9a-f]{6}$/.test(edge), `${c.name}: ${edge} is a hex color`)
+            assert(store.contrastRatio(edge, store.DARK_SURFACE_MUTED) >= 4.5, `${c.name}: ${edge} is ${store.contrastRatio(edge, store.DARK_SURFACE_MUTED).toFixed(2)}:1`)
+          })
+        })
+
+        test('darkEdge only lightens as much as needed', () => {
+          assertEqual(store.darkEdge('#ffffff'), '#ffffff', 'White is already readable')
+          assertEqual(store.darkEdge('#fde047'), '#fde047', 'a light custom color is unchanged')
+          assertEqual(store.darkEdge('#000000'), '#999999', 'black is tinted to the first gray that passes')
+          assert(store.darkEdge('#1f2937') !== '#1f2937', 'Charcoal is tinted')
+        })
+      })
+
+      group('Storage estimate', (test) => {
+        test('measureEntries counts the characters of each key and value', () => {
+          assertDeepEqual(store.measureEntries([['timeTracker.v1', '{"a":1}'], ['x', '']]), [
+            { key: 'timeTracker.v1', size: 21 },
+            { key: 'x', size: 1 },
+          ])
+          assertDeepEqual(store.measureEntries([]), [])
+        })
+
+        test('measureEntries matches the length of real saved data', () => {
+          const state = store.addTask(store.emptyState(), { name: 'Reading', color: '#2563eb', weekdayGoals: everyDay(30) }, at(2026, 9, 24), 'a')
+          const json = JSON.stringify(state)
+          assertEqual(store.measureEntries([[store.STORAGE_KEY, json]])[0].size, store.STORAGE_KEY.length + json.length)
+        })
+
+        test('formatSize uses B, KB and MB, with one decimal only below 10', () => {
+          assertEqual(store.formatSize(0), '0 B')
+          assertEqual(store.formatSize(812), '812 B')
+          assertEqual(store.formatSize(1023), '1023 B')
+          assertEqual(store.formatSize(1024), '1 KB')
+          assertEqual(store.formatSize(4300), '4.2 KB')
+          assertEqual(store.formatSize(10188), '9.9 KB')
+          assertEqual(store.formatSize(10220), '10 KB', 'rounds up to 10 without a decimal')
+          assertEqual(store.formatSize(18 * 1024 + 300), '18 KB')
+          assertEqual(store.formatSize(1.3 * 1024 * 1024), '1.3 MB')
+          assertEqual(store.formatSize(store.STORAGE_LIMIT), '5 MB', 'the limit')
         })
       })
 
