@@ -1,5 +1,5 @@
 /*
- * Timers page: create tasks and start/pause each task's stopwatch.
+ * Activities page: create tasks and start/pause each task's stopwatch.
  *
  * Cards are keyed by task id and patched in place on every render. Rebuilding
  * them would wipe a half-typed edit form, or steal focus, whenever another

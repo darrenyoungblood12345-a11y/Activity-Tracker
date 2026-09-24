@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<title>Activities · Activity Tracker</title>
+		<title>Activities · Time Tracker</title>
 		<meta
 			name="description"
 			content="Track time on daily tasks with pausable stopwatches and daily goals."
@@ -17,7 +17,7 @@
 		<script defer src="js/time.js"></script>
 		<script defer src="js/storage.js"></script>
 		<script defer src="js/ui.js"></script>
-		<script defer src="js/timers.js"></script>
+		<script defer src="js/activities.js"></script>
 	</head>
 	<body>
 		<a class="skip-link" href="#main">Skip to content</a>
@@ -25,8 +25,7 @@
 		<header class="site-header">
 			<div class="header-inner">
 				<a class="brand" href="index.html"
-					><span class="brand-mark" aria-hidden="true"></span>Activity
-					Tracker</a
+					><span class="brand-mark" aria-hidden="true"></span>Time Tracker</a
 				>
 				<nav aria-label="Main">
 					<ul class="nav-list">
@@ -65,7 +64,7 @@
 							/>
 							<p class="field-error" id="new-task-name-error"></p>
 						</div>
-						<!-- Replaced by the schedule editor from js/timers.js, which each task's edit form also uses. -->
+						<!-- Replaced by the schedule editor from js/activities.js, which each task's edit form also uses. -->
 						<div id="new-task-schedule" class="field-schedule"></div>
 						<fieldset class="field field-color">
 							<legend>Color</legend>

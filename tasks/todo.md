@@ -100,3 +100,25 @@ Plan: `~/.claude/plans/system-reminder-you-are-operating-twinkly-token.md`
 - Also found while verifying: `replaceAll` over still-corrupt stored data re-creates `timeTracker.v1.corrupt`, because `update()` re-reads before writing. That's existing behavior, and the breakdown reports it accurately.
 - Mobile: stacked theme cards were mostly preview, so at ≤ 600px the preview sits beside the label and shrinks with the card. The nav wraps to two rows at 320px.
 - The seeded test data was removed afterwards. This origin's storage is empty again, as it was before.
+
+---
+
+# Naming continuity + cleanup
+
+## Build
+- [x] Site name is **Time Tracker** everywhere: `index.html` (title + brand), `settings/index.html` and `tests.html` titles said "Activity Tracker"
+- [x] Home page is **Activities** everywhere: `tests.html` back link, `README.md` page table and layout, CSS section comment
+- [x] `js/timers.js` → `js/activities.js`, so each page script is named after its page, like `analytics.js`, `calendar.js` and `settings.js`
+- [ ] Remove the merged `settings-dark-theme-a2fb97` and `time-tracking-dark-scheduling-92dcbe` worktrees and their branches (blocked by a permission check, so the user will run it)
+
+## Verify
+- [x] tests.html all green (56/56)
+- [x] Activities page loads `js/activities.js` (schedule editor, swatches and footer render)
+- [x] `git grep -i -E "activity tracker|timers"` finds nothing outside this log
+- [x] All four pages show "Time Tracker" in the tab title and header, with the matching page heading
+
+## Review
+- Swept for dead code: every helper exported from `time.js`, `storage.js`, `ui.js` and `theme.js` is used by another file, every class in `styles.css` is used, and there are no `console.log`, `debugger` or TODO leftovers. So nothing else needed removing.
+- `tests.html` stays. It's the project's only automated coverage, and no app page loads it.
+- "Timer" is still used where it means the running stopwatch (`toggleTimer`, `role="timer"`, "the running timer"). Only the page's name changed.
+- Earlier sections of this log still say "Timers page", because that's what the page was called when they were written.

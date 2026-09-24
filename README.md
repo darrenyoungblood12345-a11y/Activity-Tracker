@@ -4,7 +4,7 @@ A small static site for tracking time on daily tasks. Each task has its own stop
 
 | Page | What it does |
 |---|---|
-| **Timers** (`/index.html`) | Create tasks, choose the days they happen and each day's goal, and start or pause each stopwatch. Only one runs at a time. Tasks that aren't scheduled today are listed separately and can still be started. |
+| **Activities** (`/index.html`) | Create tasks, choose the days they happen and each day's goal, and start or pause each stopwatch. Only one runs at a time. Tasks that aren't scheduled today are listed separately and can still be started. |
 | **Analytics** (`/analytics/`) | Today's total, goals met, per-task progress and a 7-day goal table. Days a task isn't scheduled don't count against it. |
 | **Calendar** (`/calendar/`) | A Google Calendar–style week view with one block per tracked session. |
 | **Settings** (`/settings/`) | Choose the Light theme, the Dark theme or Match device, and see an estimate of how much browser storage the tracker uses. |
@@ -63,7 +63,7 @@ All tracked data is stored under one `localStorage` key, `timeTracker.v1`. The k
 ## Project layout
 
 ```
-index.html              Timers page (home)
+index.html              Activities page (home)
 analytics/index.html    Analytics page
 calendar/index.html     Calendar page
 settings/index.html     Settings page
@@ -72,7 +72,7 @@ js/theme.js             Applies the saved theme before the first paint
 js/time.js              Pure date/duration helpers (no DOM)
 js/storage.js           Data model, validation, load/save, cross-tab sync
 js/ui.js                Shared page chrome: DOM helper, ticker, banner, export/import
-js/timers.js            Timers page
+js/activities.js        Activities page
 js/analytics.js         Analytics page
 js/calendar.js          Calendar page
 js/settings.js          Settings page
