@@ -104,8 +104,6 @@
   const setTaskColor = (node, color) =>
     Object.entries(taskColorVars(color)).forEach(([prop, value]) => node.style.setProperty(prop, value))
 
-  const colorDot = (color) => el('span', { className: 'dot', 'aria-hidden': 'true', style: taskColorVars(color) })
-
   // ---- Storage warning banner -------------------------------------------
 
   const mountBanner = () => {
@@ -222,7 +220,6 @@
     plural,
     taskColorVars,
     setTaskColor,
-    colorDot,
     mountChrome,
   })
 })()

@@ -25,10 +25,6 @@ Use a server instead of opening the files with `file://`. Some browsers give eve
 
 To deploy, upload the folder as-is to GitHub Pages, Netlify or any static host. All paths are relative, so it also works from a sub-path such as `username.github.io/time-tracker/`.
 
-## Tests
-
-Open **`/tests.html`** on the same server. It runs assertions against `js/time.js`, covering midnight splitting, today's total with a running timer, duration formatting, overlap layout, DST-safe day math and weekly schedules. It also tests the pure reducers, the version 1 → 2 migration, the text-contrast and dark-theme color helpers, and the storage-estimate helpers in `js/storage.js`. Results appear on the page, and the tab title shows the pass count. The tests never write your saved data.
-
 ## How data is stored
 
 All tracked data is stored under one `localStorage` key, `timeTracker.v1`. The key keeps its name across upgrades, and the `version` field inside it tracks the shape:
@@ -76,7 +72,6 @@ js/activities.js        Activities page
 js/analytics.js         Analytics page
 js/calendar.js          Calendar page
 js/settings.js          Settings page
-tests.html              In-browser test runner
 ```
 
 Scripts are classic `<script defer>` tags that load in this order: `time.js`, `storage.js`, `ui.js`, then the page script. Each script adds its part to one global, `window.TimeTracker`. The exception is `theme.js`, a plain blocking `<script>` placed before the stylesheet in `<head>`, so the page never flashes the wrong theme while it loads.
