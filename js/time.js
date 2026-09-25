@@ -100,9 +100,6 @@
   const totalForDay = (sessions, dayStart, taskId) =>
     totalForRange(sessions, dayStart, addDays(dayStart, 1), taskId)
 
-  const todayTotalMs = (state, taskId, now) =>
-    totalForDay(withActive(state.sessions, state.active, now), startOfDay(now), taskId)
-
   /*
    * `percent` is floored and left uncapped: 99.9 % must never read "100 %"
    * before the goal is actually met, and overachievement should show its true size.
@@ -307,7 +304,6 @@
     withActive,
     totalForRange,
     totalForDay,
-    todayTotalMs,
     goalProgress,
     minutesSinceMidnight,
     layoutIntervals,
