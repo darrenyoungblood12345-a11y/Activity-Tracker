@@ -18,7 +18,7 @@
   const breakdown = document.getElementById('storage-breakdown')
   const statusEl = document.getElementById('storage-status')
 
-  const KNOWN_KEYS = [store.STORAGE_KEY, store.CORRUPT_BACKUP_KEY, theme.THEME_KEY]
+  const KNOWN_KEYS = [store.STORAGE_KEY, store.CORRUPT_BACKUP_KEY, store.UPGRADE_BACKUP_KEY, theme.THEME_KEY]
 
   // ---- Theme ----------------------------------------------------------------
 
@@ -76,6 +76,7 @@
     const rows = [
       { label: 'Tasks and sessions', detail: `${ui.plural(tasks.length, 'task')} · ${ui.plural(sessions.length, 'session')}`, size: sizeOf(store.STORAGE_KEY), always: true },
       { label: 'Backup of unreadable data', detail: `Kept under “${store.CORRUPT_BACKUP_KEY}” when saved data couldn't be read`, size: sizeOf(store.CORRUPT_BACKUP_KEY) },
+      { label: 'Copy from before the last upgrade', detail: `Kept under “${store.UPGRADE_BACKUP_KEY}” when saved data was converted to a newer format`, size: sizeOf(store.UPGRADE_BACKUP_KEY) },
       { label: 'Theme setting', size: sizeOf(theme.THEME_KEY) },
       { label: 'Other data at this address', detail: 'Saved by other pages served from the same address. It shares the same limit.', size: otherSize },
     ]

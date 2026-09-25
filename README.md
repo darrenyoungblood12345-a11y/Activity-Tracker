@@ -1,11 +1,11 @@
 # Time Tracker
 
-A small static site for tracking time on daily tasks. Each task has its own stopwatch that you can pause and resume, plus a weekly schedule of goals such as "Reading: 30 minutes a day", "Gym: 45 minutes on Mon, Wed and Fri" or "Guitar: 20 minutes on weekdays, 1 hour on Saturday". There's no framework, no build step and no backend: just HTML, CSS and vanilla JavaScript, with data saved in your browser's `localStorage`.
+A small static site for tracking time on tasks. Each task has its own stopwatch that you can pause and resume, plus a goal. The goal can be set per day, on a weekly schedule, such as "Reading: 30 minutes a day", "Gym: 45 minutes on Mon, Wed and Fri" or "Guitar: 20 minutes on weekdays, 1 hour on Saturday". It can also be one total per week or per month, such as "Piano: 5 hours a week" or "Side project: 20 hours a month". There's no framework, no build step and no backend: just HTML, CSS and vanilla JavaScript, with data saved in your browser's `localStorage`.
 
 | Page | What it does |
 |---|---|
-| **Activities** (`/index.html`) | Create tasks, choose the days they happen and each day's goal, and start or pause each stopwatch. Only one runs at a time. Tasks that aren't scheduled today are listed separately and can still be started. |
-| **Analytics** (`/analytics/`) | Today's total, goals met, per-task progress and a 7-day goal table. Days a task isn't scheduled don't count against it. |
+| **Activities** (`/index.html`) | Create tasks, and choose a goal per day (with the days they happen and each day's goal), per week or per month. Start or pause each stopwatch. Only one runs at a time. Daily tasks that aren't scheduled today are listed separately and can still be started. Weekly and monthly tasks show this week's or this month's total. |
+| **Analytics** (`/analytics/`) | Today's total, goals met, per-task progress toward the current day, week or month, and a 7-day goal table. Days a task isn't scheduled don't count against it. |
 | **Calendar** (`/calendar/`) | A Google Calendar–style week view with one block per tracked session. |
 | **Settings** (`/settings/`) | Choose the Light theme, the Dark theme or Match device, and see an estimate of how much browser storage the tracker uses. |
 
@@ -31,15 +31,18 @@ All tracked data is stored under one `localStorage` key, `timeTracker.v1`. The k
 
 ```js
 {
-  version: 2,
-  tasks:    [{ id, name, color, weekdayGoals, createdAt }],
+  version: 3,
+  tasks:    [{ id, name, color, goalPeriod, weekdayGoals, periodGoalMinutes, createdAt }],
   sessions: [{ id, taskId, start, end }],   // epoch ms, one per start→pause stretch
   active:   { taskId, start } | null        // the running timer, if any
 }
 ```
 
-- **`weekdayGoals`** holds 7 goals in minutes, indexed like `Date#getDay()` (`[0]` is Sunday). `0` means the task isn't scheduled that day. For example, `[0, 60, 60, 60, 60, 60, 20]` means an hour on weekdays, 20 minutes on Saturday and off on Sunday.
-- **Version 1 data upgrades automatically.** A task's old `dailyGoalMinutes` becomes the same goal every day, both for saved data and for imported backups.
+- **`goalPeriod`** is `"day"`, `"week"` or `"month"`. It picks which of the two goals below the task uses.
+- **`weekdayGoals`** is used when `goalPeriod` is `"day"`. It holds 7 goals in minutes, indexed like `Date#getDay()` (`[0]` is Sunday). `0` means the task isn't scheduled that day. For example, `[0, 60, 60, 60, 60, 60, 20]` means an hour on weekdays, 20 minutes on Saturday and off on Sunday.
+- **`periodGoalMinutes`** is used when `goalPeriod` is `"week"` or `"month"`. It's the total in minutes to track that week or month, up to 7 × 24 hours for a week or 31 × 24 hours for a month. Weeks run Sunday to Saturday, like the Calendar, and months are calendar months. Both goals are always kept, so switching a task between periods and back doesn't lose its old goal.
+- **Older data upgrades automatically.** Version 1's `dailyGoalMinutes` becomes the same goal every day. Version 1 and 2 tasks become daily tasks (`goalPeriod: "day"`) with their schedule unchanged. Imported backups are upgraded the same way.
+- **Saved data is rewritten in the new shape once.** On the first load after an upgrade, older data in `timeTracker.v1` is converted and saved back, so the stored copy matches the current version. The original text is kept under `timeTracker.v1.pre-upgrade` in case anything needs to be recovered, and Settings shows it in the storage breakdown. Later loads see the data is current and leave it alone. Data saved by a newer version is never downgraded. If you have tabs open from before the upgrade, reload them.
 
 - **Elapsed time always comes from timestamps** (`now - start`), never from counting timer ticks. Background tabs, sleep and refreshes can't make the clock drift.
 - **The running timer is stored**, so it survives refreshes, moving between pages and closing the tab.
@@ -55,6 +58,7 @@ All tracked data is stored under one `localStorage` key, `timeTracker.v1`. The k
 - **Export JSON** in the footer downloads a backup of all your data.
 - **Import JSON** asks for confirmation, then *replaces* all current data with the file's contents. Invalid entries in the file are dropped.
 - **To start over**, run `localStorage.removeItem('timeTracker.v1')` in the browser console and reload the page.
+- **To remove the pre-upgrade copy** once you're happy with the upgrade, run `localStorage.removeItem('timeTracker.v1.pre-upgrade')`.
 
 ## Project layout
 
@@ -81,5 +85,6 @@ Scripts are classic `<script defer>` tags that load in this order: `time.js`, `s
 - Days, weeks and midnights use your computer's current timezone. If you change timezones, past sessions are regrouped into the new timezone's days, but their durations don't change.
 - Calendar blocks are placed by wall-clock time, so they line up with the hour labels even on days when DST starts or ends. Their labels still show real elapsed time.
 - Goals and schedules have no history. Editing either recalculates progress for every day, including the 7-day table.
+- In the 7-day table, weekly and monthly tasks show the time tracked each day rather than a percentage, since their goal isn't met on any single day.
 - Text on a task color switches between white and dark by contrast, so light colors such as White stay readable on buttons and calendar blocks.
 - Task colors fill the same way in both themes. In the dark theme, outlines and text drawn in a task's color use a lighter tint of it (`darkEdge` in `js/storage.js`), so dark colors such as Charcoal stay visible. The switch uses CSS `light-dark()` (Chrome 123+, Safari 17.5+, Firefox 120+), so changing themes restyles the page without a reload.

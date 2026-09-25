@@ -236,6 +236,42 @@
     return `${days} · ${formatGoal(weekdayGoals[on[0]])}`
   }
 
+  // ---- Goal periods -------------------------------------------------------
+
+  /*
+   * The local day, week (Sunday–Saturday) or calendar month containing `ms`,
+   * as [start, end). Built with the Date constructor, like addDays, so a
+   * period that crosses a DST change keeps its real length.
+   */
+  const periodRange = (period, ms) => {
+    if (period === 'month') {
+      const d = new Date(ms)
+      return {
+        start: new Date(d.getFullYear(), d.getMonth(), 1).getTime(),
+        end: new Date(d.getFullYear(), d.getMonth() + 1, 1).getTime(),
+      }
+    }
+    const start = period === 'week' ? startOfWeek(ms) : startOfDay(ms)
+    return { start, end: addDays(start, period === 'week' ? 7 : 1) }
+  }
+
+  // The goal a task is working toward at `ms`. A daily task's minutes are 0 on a day it's off.
+  const goalFor = (task, ms) => ({
+    period: task.goalPeriod,
+    minutes: task.goalPeriod === 'day' ? weekdayGoal(task.weekdayGoals, ms) : task.periodGoalMinutes,
+    ...periodRange(task.goalPeriod, ms),
+  })
+
+  const PERIOD_LABELS = Object.freeze({ day: 'Today', week: 'This week', month: 'This month' })
+
+  const periodLabel = (period) => PERIOD_LABELS[period]
+
+  // "Weekdays · 1h" for a daily task, "5h 30m per week" or "20h per month" otherwise.
+  const describeGoal = (task) =>
+    task.goalPeriod === 'day'
+      ? describeSchedule(task.weekdayGoals)
+      : `${formatGoal(task.periodGoalMinutes)} per ${task.goalPeriod}`
+
   // "9:00 AM – 9:30 AM", or with dates when the session crosses midnight.
   const formatSessionRange = (start, end) => {
     if (isSameDay(start, end)) return `${formatClock(start)} – ${formatClock(end)}`
@@ -287,5 +323,9 @@
     weekdayName,
     weekdayGoal,
     describeSchedule,
+    periodRange,
+    goalFor,
+    periodLabel,
+    describeGoal,
   })
 })()
