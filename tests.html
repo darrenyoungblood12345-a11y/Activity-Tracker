@@ -602,7 +602,9 @@
 						id,
 						name: id.toUpperCase(),
 						color: "#2563eb",
+						goalPeriod: "day",
 						weekdayGoals: everyDay(30),
+						periodGoalMinutes: store.DEFAULT_PERIOD_GOAL_MINUTES,
 						createdAt: 0,
 						...extra,
 					});
@@ -745,7 +747,9 @@
 							id: "a",
 							name: "Reading",
 							color: "#2563eb",
+							goalPeriod: "day",
 							weekdayGoals: weekdays,
+							periodGoalMinutes: store.DEFAULT_PERIOD_GOAL_MINUTES,
 							createdAt: 99,
 						});
 						assertEqual(
@@ -773,10 +777,12 @@
 							id: "a",
 							name: "Reading",
 							color: "#2563eb",
+							goalPeriod: "day",
 							weekdayGoals: everyDay(45),
+							periodGoalMinutes: store.DEFAULT_PERIOD_GOAL_MINUTES,
 							createdAt: 5,
 						});
-						assertEqual(state.version, 2, "upgraded version");
+						assertEqual(state.version, 3, "upgraded version");
 						assertDeepEqual(
 							store.normalize({ tasks: [{ id: "b", name: "B" }], sessions: [] })
 								.tasks[0].weekdayGoals,
@@ -1019,6 +1025,224 @@
 						);
 						assertEqual(p.met, false, "never met");
 						assertEqual(p.percent, 0, "no percentage");
+					});
+				});
+
+				group("Weekly and monthly goals", (test) => {
+					const task = (id, extra = {}) =>
+						store.normalize({
+							tasks: [{ id, name: id.toUpperCase(), ...extra }],
+							sessions: [],
+						}).tasks[0];
+
+					test("periodRange: a week runs Sunday to Sunday, across a month boundary", () => {
+						assertDeepEqual(
+							time.periodRange("week", at(2026, 9, 24, 15)),
+							{ start: at(2026, 9, 20), end: at(2026, 9, 27) },
+							"Thursday"
+						);
+						assertDeepEqual(
+							time.periodRange("week", at(2026, 9, 30)),
+							{ start: at(2026, 9, 27), end: at(2026, 10, 4) },
+							"Sep 30 is in the week ending Oct 3"
+						);
+						assertDeepEqual(
+							time.periodRange("week", at(2026, 9, 20)),
+							{ start: at(2026, 9, 20), end: at(2026, 9, 27) },
+							"Sunday midnight starts a week"
+						);
+					});
+
+					test("periodRange: a month is the calendar month, including year end and leap years", () => {
+						assertDeepEqual(
+							time.periodRange("month", at(2026, 12, 31, 23, 59)),
+							{ start: at(2026, 12, 1), end: at(2027, 1, 1) },
+							"December"
+						);
+						const feb = time.periodRange("month", at(2028, 2, 10));
+						assertEqual(
+							time.dayKey(feb.end - 1),
+							"2028-02-29",
+							"leap February ends on the 29th"
+						);
+						assertDeepEqual(
+							time.periodRange("day", at(2026, 9, 24, 15)),
+							{ start: at(2026, 9, 24), end: at(2026, 9, 25) },
+							"day"
+						);
+					});
+
+					test("goalFor uses the day's goal for daily tasks and the period goal otherwise", () => {
+						const daily = task("d", { weekdayGoals: [0, 30, 30, 30, 30, 30, 0] });
+						assertEqual(time.goalFor(daily, at(2026, 9, 24)).minutes, 30, "Thursday");
+						assertEqual(time.goalFor(daily, at(2026, 9, 26)).minutes, 0, "off on Saturday");
+						const weekly = task("w", { goalPeriod: "week", periodGoalMinutes: 330 });
+						assertDeepEqual(
+							time.goalFor(weekly, at(2026, 9, 26)),
+							{ period: "week", minutes: 330, start: at(2026, 9, 20), end: at(2026, 9, 27) },
+							"weekly tasks have no off days"
+						);
+						const monthly = task("m", { goalPeriod: "month", periodGoalMinutes: 1200 });
+						assertDeepEqual(
+							time.goalFor(monthly, at(2026, 9, 24)),
+							{ period: "month", minutes: 1200, start: at(2026, 9, 1), end: at(2026, 10, 1) }
+						);
+					});
+
+					test("this week's total counts every day since Sunday, and nothing before it", () => {
+						const sessions = [
+							{ taskId: "w", start: at(2026, 9, 19, 9), end: at(2026, 9, 19, 10) },
+							{ taskId: "w", start: at(2026, 9, 19, 23, 30), end: at(2026, 9, 20, 0, 30) },
+							{ taskId: "w", start: at(2026, 9, 21, 9), end: at(2026, 9, 21, 10) },
+							{ taskId: "w", start: at(2026, 9, 23, 18), end: at(2026, 9, 23, 18, 45) },
+							{ taskId: "other", start: at(2026, 9, 22, 9), end: at(2026, 9, 22, 10) },
+						];
+						const { start, end } = time.goalFor(
+							task("w", { goalPeriod: "week" }),
+							at(2026, 9, 24, 12)
+						);
+						assertEqual(
+							time.totalForRange(sessions, start, end, "w"),
+							30 * MIN + HOUR + 45 * MIN,
+							"last Saturday left out, the overnight session split at Sunday midnight"
+						);
+					});
+
+					test("normalize keeps a known goalPeriod and cleans periodGoalMinutes per period", () => {
+						assertEqual(task("a", { goalPeriod: "year" }).goalPeriod, "day", "unknown period");
+						assertEqual(task("a", { goalPeriod: "month" }).goalPeriod, "month");
+						assertEqual(
+							task("a", { goalPeriod: "week", periodGoalMinutes: 99999 }).periodGoalMinutes,
+							7 * 1440,
+							"week cap"
+						);
+						assertEqual(
+							task("a", { goalPeriod: "month", periodGoalMinutes: 99999 }).periodGoalMinutes,
+							31 * 1440,
+							"month cap"
+						);
+						assertEqual(
+							task("a", { goalPeriod: "week", periodGoalMinutes: 90.4 }).periodGoalMinutes,
+							90,
+							"rounded"
+						);
+						[0, -5, "x", null, undefined].forEach((bad) =>
+							assertEqual(
+								task("a", { goalPeriod: "week", periodGoalMinutes: bad }).periodGoalMinutes,
+								store.DEFAULT_PERIOD_GOAL_MINUTES,
+								show(bad)
+							)
+						);
+					});
+
+					test("version 2 tasks load as daily tasks with their schedule unchanged", () => {
+						const weekdays = [0, 60, 60, 60, 60, 60, 20];
+						const state = store.normalize({
+							version: 2,
+							tasks: [{ id: "a", name: "Guitar", color: "#2563eb", weekdayGoals: weekdays, createdAt: 5 }],
+							sessions: [],
+							active: null,
+						});
+						assertEqual(state.version, 3);
+						assertDeepEqual(state.tasks[0], {
+							id: "a",
+							name: "Guitar",
+							color: "#2563eb",
+							goalPeriod: "day",
+							weekdayGoals: weekdays,
+							periodGoalMinutes: store.DEFAULT_PERIOD_GOAL_MINUTES,
+							createdAt: 5,
+						});
+					});
+
+					test("switching a task's period keeps the other period's goal for later", () => {
+						const weekdays = [0, 45, 45, 45, 45, 45, 0];
+						const s0 = { ...store.emptyState(), tasks: [task("a", { weekdayGoals: weekdays })] };
+						const weekly = store.updateTask(s0, "a", { goalPeriod: "week", periodGoalMinutes: 330 });
+						assertEqual(weekly.tasks[0].goalPeriod, "week");
+						assertDeepEqual(weekly.tasks[0].weekdayGoals, weekdays, "day schedule kept");
+						const back = store.updateTask(weekly, "a", { goalPeriod: "day", weekdayGoals: weekdays });
+						assertEqual(back.tasks[0].periodGoalMinutes, 330, "weekly goal kept");
+					});
+
+					test("describeGoal and periodLabel", () => {
+						assertEqual(
+							time.describeGoal(task("a", { goalPeriod: "week", periodGoalMinutes: 330 })),
+							"5h 30m per week"
+						);
+						assertEqual(
+							time.describeGoal(task("a", { goalPeriod: "month", periodGoalMinutes: 1200 })),
+							"20h per month"
+						);
+						assertEqual(
+							time.describeGoal(task("a", { goalPeriod: "week", periodGoalMinutes: 45 })),
+							"45 min per week"
+						);
+						assertEqual(
+							time.describeGoal(task("a", { weekdayGoals: everyDay(30) })),
+							"Every day · 30 min",
+							"daily tasks describe their schedule"
+						);
+						assertDeepEqual(
+							["day", "week", "month"].map(time.periodLabel),
+							["Today", "This week", "This month"]
+						);
+					});
+				});
+
+				group("Saved data upgrade", (test) => {
+					const v2 = {
+						version: 2,
+						tasks: [
+							{ id: "a", name: "Guitar", color: "#2563eb", weekdayGoals: [0, 60, 60, 60, 60, 60, 20], createdAt: 5 },
+						],
+						sessions: [{ id: "s1", taskId: "a", start: 1000, end: 2000 }],
+						active: { taskId: "a", start: 3000 },
+					};
+
+					test("upgradeText rewrites version 2 data in the current shape, keeping everything", () => {
+						const out = JSON.parse(store.upgradeText(JSON.stringify(v2)));
+						assertEqual(out.version, store.SCHEMA_VERSION);
+						assertEqual(out.tasks[0].goalPeriod, "day");
+						assertDeepEqual(out.tasks[0].weekdayGoals, v2.tasks[0].weekdayGoals, "schedule");
+						assertDeepEqual(out.sessions, v2.sessions, "sessions");
+						assertDeepEqual(out.active, v2.active, "running timer");
+					});
+
+					test("upgradeText rewrites version 1 data, and data with no version at all", () => {
+						const v1 = {
+							version: 1,
+							tasks: [{ id: "a", name: "Reading", color: "#2563eb", dailyGoalMinutes: 45, createdAt: 5 }],
+							sessions: [],
+							active: null,
+						};
+						const out = JSON.parse(store.upgradeText(JSON.stringify(v1)));
+						assertEqual(out.version, store.SCHEMA_VERSION);
+						assertDeepEqual(out.tasks[0].weekdayGoals, everyDay(45));
+						assert(
+							!("dailyGoalMinutes" in out.tasks[0]),
+							"the old field is gone from the stored copy"
+						);
+						const { version, ...unversioned } = v2;
+						assert(store.upgradeText(JSON.stringify(unversioned)) !== null, "no version");
+					});
+
+					test("upgradeText leaves current, newer and unreadable data alone", () => {
+						const current = store.upgradeText(JSON.stringify(v2));
+						assertEqual(store.upgradeText(current), null, "already upgraded");
+						assertEqual(store.upgradeText(JSON.stringify({ ...v2, version: 99 })), null, "newer");
+						["{", "", "null", "[]", '"text"'].forEach((raw) =>
+							assertEqual(store.upgradeText(raw), null, show(raw))
+						);
+					});
+
+					test("isOutdated", () => {
+						assertEqual(store.isOutdated({ version: 1 }), true, "v1");
+						assertEqual(store.isOutdated({ version: "2" }), true, "numeric string");
+						assertEqual(store.isOutdated({}), true, "missing");
+						assertEqual(store.isOutdated({ version: store.SCHEMA_VERSION }), false, "current");
+						assertEqual(store.isOutdated({ version: store.SCHEMA_VERSION + 1 }), false, "newer");
+						assertEqual(store.isOutdated(null), false, "not an object");
 					});
 				});
 

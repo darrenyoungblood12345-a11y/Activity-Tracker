@@ -594,9 +594,54 @@ input {
   outline-offset: 2px;
 }
 
+/* "Goal per" Day / Week / Month: the same chips as the day picker, used as radios. */
+.period-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-bottom: 6px;
+}
+
+.period-label {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.period-picker {
+  display: flex;
+  flex: 0 1 16rem;
+  gap: 4px;
+}
+
+/* Keeps the fieldset's spacing for the day controls now that they're grouped. */
+.day-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 /* A few digits of minutes don't need the full width of the add form. */
-.field-schedule > .field input[type='number'] {
+.field-schedule .field input[type='number'] {
   max-width: 12rem;
+}
+
+.duration-inputs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+
+.duration-part {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 7rem;
+}
+
+.field .duration-part label {
+  color: var(--text-muted);
+  font-size: 0.8rem;
 }
 
 .field .check-row {
