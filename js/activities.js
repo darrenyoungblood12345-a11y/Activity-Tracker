@@ -4,7 +4,8 @@
  * Cards are keyed by task id and patched in place on every render. Rebuilding
  * them would wipe a half-typed edit form, or steal focus, whenever another
  * tab changes the data. Tasks scheduled today are listed first; the rest sit
- * in a "Not scheduled today" section and can still be started.
+ * in a "Not scheduled today" section and can still be started. Weekly and
+ * monthly tasks have no off days, so they're always listed first.
  */
 (function () {
   'use strict'
@@ -13,13 +14,23 @@
   const { el, setText } = ui
 
   const BASE_TITLE = document.title
-  const DEFAULT_SCHEDULE = time.WEEKDAYS.map(() => store.DEFAULT_GOAL_MINUTES)
+  const DEFAULT_GOAL = {
+    goalPeriod: 'day',
+    weekdayGoals: time.WEEKDAYS.map(() => store.DEFAULT_GOAL_MINUTES),
+    periodGoalMinutes: store.DEFAULT_PERIOD_GOAL_MINUTES,
+  }
   const GOAL_ERROR = `Enter whole minutes from ${store.GOAL_MIN} to ${store.GOAL_MAX}.`
   const PRESETS = [
     { label: 'Every day', days: time.WEEKDAYS },
     { label: 'Weekdays', days: time.WORKDAYS },
     { label: 'Weekends', days: time.WEEKEND },
   ]
+  const PERIODS = [
+    { value: 'day', label: 'Day' },
+    { value: 'week', label: 'Week' },
+    { value: 'month', label: 'Month' },
+  ]
+  const MINUTES_PER_HOUR = 60
 
   const form = document.getElementById('add-task-form')
   const nameInput = document.getElementById('new-task-name')
@@ -37,7 +48,7 @@
   let renderedDayKey = ''
 
   const findTask = (taskId) => store.getState().tasks.find((t) => t.id === taskId)
-  const isScheduledOn = (task, ms) => time.weekdayGoal(task.weekdayGoals, ms) > 0
+  const isScheduledOn = (task, ms) => time.goalFor(task, ms).minutes > 0
 
   // Clearing first makes screen readers announce a message even when it repeats.
   const announce = (message) => {
@@ -87,32 +98,60 @@
       if (event.target.matches('[aria-invalid]')) setFieldError(event.target, '')
     })
 
-  const minutesInput = (id, describedBy = `${id}-error`) =>
+  const numberInput = (id, describedBy, min, max) =>
     el('input', {
       id,
       type: 'number',
       inputmode: 'numeric',
-      min: store.GOAL_MIN,
-      max: store.GOAL_MAX,
+      min,
+      max,
       step: 1,
       'aria-describedby': describedBy,
     })
+
+  const minutesInput = (id, describedBy = `${id}-error`) => numberInput(id, describedBy, store.GOAL_MIN, store.GOAL_MAX)
 
   const isValidGoal = (input) => {
     const goal = Number(input.value)
     return input.value !== '' && Number.isInteger(goal) && goal >= store.GOAL_MIN && goal <= store.GOAL_MAX
   }
 
+  // A whole number from 0 to `max`, or null. An empty field counts as 0, so "5 hours" can leave minutes blank.
+  const readWhole = (input, max) => {
+    const n = input.value === '' ? 0 : Number(input.value)
+    return Number.isInteger(n) && n >= 0 && n <= max ? n : null
+  }
+
   /*
-   * Which weekdays a task happens on, and its goal on each. One goal covers
-   * every chosen day, unless "Different goal for each day" is on: then each
-   * chosen day gets its own minutes field. Turning that on copies the single
-   * goal into every day; turning it off copies the first chosen day's goal back.
+   * A task's goal. "Goal per" picks the period. For Day: which weekdays the
+   * task happens on, and its goal on each. One goal covers every chosen day,
+   * unless "Different goal for each day" is on: then each chosen day gets its
+   * own minutes field. Turning that on copies the single goal into every day;
+   * turning it off copies the first chosen day's goal back. For Week and
+   * Month: one goal in hours and minutes, with no days to choose. Each period
+   * keeps its own values while another is picked, so switching back and forth
+   * loses nothing.
    */
   const createScheduleEditor = () => {
     const prefix = ui.uid('schedule')
     const daysError = el('p', { className: 'field-error', id: `${prefix}-days-error` })
     const gridErrorId = `${prefix}-day-goals-error`
+
+    const periodLabelId = `${prefix}-period-label`
+    const periodRadios = PERIODS.map(({ value }) => el('input', { type: 'radio', name: `${prefix}-period`, value }))
+    const periodPicker = el(
+      'div',
+      { className: 'period-row' },
+      el('span', { className: 'period-label', id: periodLabelId, text: 'Goal per' }),
+      el(
+        'div',
+        { className: 'period-picker', role: 'radiogroup', 'aria-labelledby': periodLabelId },
+        PERIODS.map(({ label }, i) =>
+          el('label', { className: 'day-chip' }, periodRadios[i], el('span', { className: 'day-chip-text', text: label })),
+        ),
+      ),
+    )
+    const checkedPeriod = () => (periodRadios.find((radio) => radio.checked) || periodRadios[0]).value
 
     const dayBoxes = time.WEEKDAYS.map((day) => el('input', { type: 'checkbox', value: day }))
     const dayGroup = el(
@@ -154,7 +193,21 @@
       el('p', { className: 'field-error', id: gridErrorId }),
     )
 
-    const goalInputs = [sameGoal, ...dayGoals]
+    const periodErrorId = `${prefix}-period-goal-error`
+    const periodLegend = el('legend')
+    const hoursInput = numberInput(`${prefix}-hours`, periodErrorId, 0, null)
+    const extraMinutes = numberInput(`${prefix}-minutes`, periodErrorId, 0, MINUTES_PER_HOUR - 1)
+    const durationPart = (input, labelText) =>
+      el('div', { className: 'duration-part' }, el('label', { for: input.id, text: labelText }), input)
+    const periodBlock = el(
+      'fieldset',
+      { className: 'field period-goal', hidden: true },
+      periodLegend,
+      el('div', { className: 'duration-inputs' }, durationPart(hoursInput, 'Hours'), durationPart(extraMinutes, 'Minutes')),
+      el('p', { className: 'field-error', id: periodErrorId }),
+    )
+
+    const goalInputs = [sameGoal, ...dayGoals, hoursInput, extraMinutes]
     const checkedDays = () => time.WEEKDAYS.filter((day) => dayBoxes[day].checked)
 
     const clearErrors = () => {
@@ -163,6 +216,13 @@
     }
 
     const sync = () => {
+      const period = checkedPeriod()
+      dayBlock.hidden = period !== 'day'
+      periodBlock.hidden = period === 'day'
+      if (period !== 'day') {
+        setText(periodLegend, `Goal per ${period}`)
+        hoursInput.max = String(store.periodGoalMax(period) / MINUTES_PER_HOUR)
+      }
       sameField.hidden = customBox.checked
       customBlock.hidden = !customBox.checked
       time.WEEKDAYS.forEach((day) => {
@@ -185,6 +245,13 @@
 
     dayBoxes.forEach((box) => box.addEventListener('change', onDaysChanged))
 
+    periodRadios.forEach((radio) =>
+      radio.addEventListener('change', () => {
+        clearErrors()
+        sync()
+      }),
+    )
+
     const presetButtons = PRESETS.map(({ label, days }) =>
       el('button', {
         type: 'button',
@@ -197,6 +264,16 @@
           onDaysChanged()
         },
       }),
+    )
+
+    const dayBlock = el(
+      'div',
+      { className: 'day-block' },
+      el('div', { className: 'schedule-days' }, dayGroup, el('div', { className: 'btn-row' }, presetButtons)),
+      daysError,
+      sameField,
+      el('label', { className: 'check-row' }, customBox, 'Different goal for each day'),
+      customBlock,
     )
 
     customBox.addEventListener('change', () => {
@@ -212,21 +289,24 @@
       sync()
     })
 
-    const setValue = (weekdayGoals) => {
+    const setValue = ({ goalPeriod, weekdayGoals, periodGoalMinutes }) => {
       const on = time.WEEKDAYS.filter((day) => weekdayGoals[day] > 0)
+      periodRadios.forEach((radio) => {
+        radio.checked = radio.value === goalPeriod
+      })
       time.WEEKDAYS.forEach((day) => {
         dayBoxes[day].checked = weekdayGoals[day] > 0
         dayGoals[day].value = weekdayGoals[day] > 0 ? String(weekdayGoals[day]) : ''
       })
       sameGoal.value = String(on.length > 0 ? weekdayGoals[on[0]] : store.DEFAULT_GOAL_MINUTES)
       customBox.checked = new Set(on.map((day) => weekdayGoals[day])).size > 1
+      hoursInput.value = String(Math.floor(periodGoalMinutes / MINUTES_PER_HOUR))
+      extraMinutes.value = String(periodGoalMinutes % MINUTES_PER_HOUR)
       clearErrors()
       sync()
     }
 
-    // Returns { weekdayGoals }, or { invalid } with the first control to fix after flagging errors inline.
-    const read = () => {
-      clearErrors()
+    const readDays = () => {
       const days = checkedDays()
       if (days.length === 0) {
         setText(daysError, 'Pick at least one day.')
@@ -236,18 +316,44 @@
       const invalid = [...new Set(days.map(inputFor))].filter((input) => !isValidGoal(input))
       invalid.forEach((input) => setFieldError(input, GOAL_ERROR))
       if (invalid.length > 0) return { invalid: invalid[0] }
-      return { weekdayGoals: time.WEEKDAYS.map((day) => (dayBoxes[day].checked ? Number(inputFor(day).value) : 0)) }
+      return { goalPeriod: 'day', weekdayGoals: time.WEEKDAYS.map((day) => (dayBoxes[day].checked ? Number(inputFor(day).value) : 0)) }
+    }
+
+    const readPeriodGoal = (period) => {
+      const max = store.periodGoalMax(period)
+      const maxHours = max / MINUTES_PER_HOUR
+      const hours = readWhole(hoursInput, maxHours)
+      const minutes = readWhole(extraMinutes, MINUTES_PER_HOUR - 1)
+      const flag = (inputs, message) => {
+        inputs.forEach((input) => setFieldError(input, message))
+        return { invalid: inputs[0] }
+      }
+      if (hours === null || minutes === null) {
+        return flag(
+          [hours === null && hoursInput, minutes === null && extraMinutes].filter(Boolean),
+          `Enter whole hours from 0 to ${maxHours}, and minutes from 0 to ${MINUTES_PER_HOUR - 1}.`,
+        )
+      }
+      const total = hours * MINUTES_PER_HOUR + minutes
+      if (total < store.GOAL_MIN) return flag([hoursInput, extraMinutes], 'Enter a goal of at least 1 minute.')
+      if (total > max) return flag([extraMinutes], `A goal per ${period} can be at most ${maxHours} hours.`)
+      return { goalPeriod: period, periodGoalMinutes: total }
+    }
+
+    // Returns the goal fields, or { invalid } with the first control to fix after flagging errors inline.
+    const read = () => {
+      clearErrors()
+      const period = checkedPeriod()
+      return period === 'day' ? readDays() : readPeriodGoal(period)
     }
 
     const node = el(
       'fieldset',
       { className: 'field field-schedule' },
       el('legend', { text: 'Schedule' }),
-      el('div', { className: 'schedule-days' }, dayGroup, el('div', { className: 'btn-row' }, presetButtons)),
-      daysError,
-      sameField,
-      el('label', { className: 'check-row' }, customBox, 'Different goal for each day'),
-      customBlock,
+      periodPicker,
+      dayBlock,
+      periodBlock,
     )
 
     return { node, setValue, read }
@@ -258,14 +364,15 @@
     const nameField = formEl.elements.namedItem('name')
     const name = nameField.value.trim()
     setFieldError(nameField, name ? '' : 'Enter a task name.')
-    const { weekdayGoals, invalid } = schedule.read()
+    const { invalid, ...goal } = schedule.read()
     const firstInvalid = (!name && nameField) || invalid
     if (firstInvalid) {
       firstInvalid.focus()
       return null
     }
-    const checked = formEl.querySelector('input[type="radio"]:checked')
-    return { name, weekdayGoals, color: checked ? checked.value : fallbackColor }
+    // Scoped to the swatches, since the "Goal per" picker is a radio group too.
+    const checked = formEl.querySelector('.swatch input:checked')
+    return { name, ...goal, color: checked ? checked.value : fallbackColor }
   }
 
   // ---- Actions ------------------------------------------------------------
@@ -293,7 +400,7 @@
     if (!card || !task) return
     // Inputs are filled only when editing starts, so later re-renders never overwrite what's being typed.
     card.editName.value = task.name
-    card.schedule.setValue(task.weekdayGoals)
+    card.schedule.setValue(task)
     selectColor(card.editSwatches, task.color)
     setFieldError(card.editName, '')
     setMode(card, 'edit')
@@ -357,6 +464,7 @@
     const nameEl = el('h3', { className: 'task-name' })
     const badge = el('span', { className: 'badge', text: 'Running', hidden: true })
     const scheduleEl = el('p', { className: 'task-schedule' })
+    const periodEl = el('p', { className: 'time-label' })
     const timeEl = el('p', { className: 'task-time', role: 'timer' })
     const goalEl = el('p', { className: 'task-goal' })
     const remainingEl = el('p', { className: 'task-remaining' })
@@ -371,7 +479,7 @@
       { className: 'card-view' },
       el('div', { className: 'task-head' }, el('span', { className: 'dot', 'aria-hidden': 'true' }), nameEl, badge),
       scheduleEl,
-      el('p', { className: 'time-label', text: 'Today' }),
+      periodEl,
       timeEl,
       el('div', { className: 'goal-row' }, goalEl, remainingEl),
       progress.bar,
@@ -423,7 +531,7 @@
     const root = el('li', { className: 'task-card' }, view, actions, editForm, confirmBox)
 
     return {
-      root, view, actions, nameEl, badge, scheduleEl, timeEl, goalEl, remainingEl, progress,
+      root, view, actions, nameEl, badge, scheduleEl, periodEl, timeEl, goalEl, remainingEl, progress,
       toggleBtn, editBtn, deleteBtn, editForm, editName, schedule, editSwatches,
       confirmBox, confirmText, confirmBtn, cancelDeleteBtn, mode: 'view',
     }
@@ -433,8 +541,10 @@
   const paintStatic = (card, task) => {
     ui.setTaskColor(card.root, task.color)
     setText(card.nameEl, task.name)
-    setText(card.scheduleEl, time.describeSchedule(task.weekdayGoals))
-    card.progress.bar.setAttribute('aria-label', `${task.name}: progress toward today's goal`)
+    const period = time.periodLabel(task.goalPeriod)
+    setText(card.scheduleEl, time.describeGoal(task))
+    setText(card.periodEl, period)
+    card.progress.bar.setAttribute('aria-label', `${task.name}: progress toward ${period.toLowerCase()}'s goal`)
     card.editBtn.setAttribute('aria-label', `Edit ${task.name}`)
     card.deleteBtn.setAttribute('aria-label', `Delete ${task.name}`)
     card.confirmBtn.setAttribute('aria-label', `Delete ${task.name} permanently`)
@@ -443,8 +553,9 @@
   /*
    * Live values. Recomputed from timestamps on every tick, so a running timer
    * rolls over at local midnight on its own: "today" simply moves forward and
-   * the display starts again from 0. A new day can also change which tasks are
-   * scheduled, so it triggers a full render.
+   * the display starts again from 0. Weeks and months start at a midnight too,
+   * so weekly and monthly totals reset the same way. A new day can also change
+   * which tasks are scheduled, so it triggers a full render.
    */
   const tick = (now) => {
     if (time.dayKey(now) !== renderedDayKey) {
@@ -453,20 +564,21 @@
     }
     const state = store.getState()
     const sessions = time.withActive(state.sessions, state.active, now)
-    const dayStart = time.startOfDay(now)
+    // Today for a daily task, otherwise this week or this month.
+    const periodTotal = (task, goal = time.goalFor(task, now)) => time.totalForRange(sessions, goal.start, goal.end, task.id)
     setText(todayLabel, time.formatLongDate(now))
 
     state.tasks.forEach((task) => {
       const card = cards.get(task.id)
       if (!card) return
-      const doneMs = time.totalForDay(sessions, dayStart, task.id)
-      const goalMinutes = time.weekdayGoal(task.weekdayGoals, now)
-      const off = goalMinutes === 0
-      const progress = time.goalProgress(doneMs, goalMinutes)
+      const goal = time.goalFor(task, now)
+      const doneMs = periodTotal(task, goal)
+      const off = goal.minutes === 0
+      const progress = time.goalProgress(doneMs, goal.minutes)
       const running = Boolean(state.active && state.active.taskId === task.id)
       const action = running ? 'Pause' : doneMs > 0 ? 'Resume' : 'Start'
       setText(card.timeEl, time.formatHMS(doneMs))
-      setText(card.goalEl, off ? 'Not scheduled today' : `Goal: ${time.formatGoal(goalMinutes)}`)
+      setText(card.goalEl, off ? 'Not scheduled today' : `Goal: ${time.formatGoal(goal.minutes)}`)
       setText(card.remainingEl, off ? '' : ui.remainingText(progress))
       ui.setProgress(card.progress, progress)
       card.progress.bar.hidden = off
@@ -481,7 +593,7 @@
 
     const activeTask = state.active && state.tasks.find((t) => t.id === state.active.taskId)
     document.title = activeTask
-      ? `${time.formatHMS(time.totalForDay(sessions, dayStart, activeTask.id))} · ${activeTask.name} · Time Tracker`
+      ? `${time.formatHMS(periodTotal(activeTask))} · ${activeTask.name} · Time Tracker`
       : BASE_TITLE
   }
 
@@ -527,7 +639,7 @@
   const resetAddForm = () => {
     form.reset()
     setFieldError(nameInput, '')
-    addSchedule.setValue(DEFAULT_SCHEDULE)
+    addSchedule.setValue(DEFAULT_GOAL)
     selectColor(colorsBox, store.nextColor(store.getState()))
   }
 
@@ -550,7 +662,7 @@
   // ---- Boot -----------------------------------------------------------------
 
   scheduleMount.replaceWith(addSchedule.node)
-  addSchedule.setValue(DEFAULT_SCHEDULE)
+  addSchedule.setValue(DEFAULT_GOAL)
   colorsBox.append(...buildSwatches('color', store.nextColor(store.getState())))
   ui.mountChrome()
   // Subscribers receive the state as an argument; render's only parameter is `now`.

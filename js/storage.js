@@ -13,12 +13,18 @@
   // The key keeps its original name so saved data survives schema upgrades; `version` inside it tracks the shape.
   const STORAGE_KEY = 'timeTracker.v1'
   const CORRUPT_BACKUP_KEY = `${STORAGE_KEY}.corrupt`
-  const SCHEMA_VERSION = 2
+  const UPGRADE_BACKUP_KEY = `${STORAGE_KEY}.pre-upgrade`
+  const SCHEMA_VERSION = 3
   const NAME_MAX_LENGTH = 60
   const GOAL_MIN = 1
   const GOAL_MAX = 1440
   const DEFAULT_GOAL_MINUTES = 30
   const DAYS_PER_WEEK = 7
+  // A task's goal is set per day (with a weekly schedule), per week, or per calendar month.
+  const GOAL_PERIODS = Object.freeze(['day', 'week', 'month'])
+  const WEEK_GOAL_MAX = DAYS_PER_WEEK * GOAL_MAX
+  const MONTH_GOAL_MAX = 31 * GOAL_MAX
+  const DEFAULT_PERIOD_GOAL_MINUTES = 300
   const DARK_TEXT = '#1a1d21'
   // The dark theme's --surface-muted in css/styles.css.
   const DARK_SURFACE_MUTED = '#23272d'
@@ -121,15 +127,31 @@
     return Array(DAYS_PER_WEEK).fill(Number.isFinite(legacy) ? clampGoal(legacy) : DEFAULT_GOAL_MINUTES)
   }
 
+  // A daily task never uses its period goal, so the month cap is the loosest that still keeps it sane.
+  const periodGoalMax = (period) => (period === 'week' ? WEEK_GOAL_MAX : MONTH_GOAL_MAX)
+
+  // Anything missing or invalid gets the default, including version 2 tasks, which had no period goal.
+  const cleanPeriodGoal = (v, period) => {
+    const minutes = Math.round(Number(v))
+    return Number.isFinite(minutes) && minutes >= GOAL_MIN ? Math.min(periodGoalMax(period), minutes) : DEFAULT_PERIOD_GOAL_MINUTES
+  }
+
+  /*
+   * Both goals are always kept, whichever period is active, so switching a task
+   * from daily to weekly and back again restores its old day schedule.
+   */
   const normalizeTask = (raw) => {
     if (!isObject(raw) || typeof raw.id !== 'string' || !raw.id) return null
     const name = cleanName(raw.name)
     if (!name) return null
+    const goalPeriod = GOAL_PERIODS.includes(raw.goalPeriod) ? raw.goalPeriod : 'day'
     return {
       id: raw.id,
       name,
       color: isHexColor(raw.color) ? raw.color.toLowerCase() : PALETTE[0].value,
+      goalPeriod,
       weekdayGoals: normalizeWeekdayGoals(raw),
+      periodGoalMinutes: cleanPeriodGoal(raw.periodGoalMinutes, goalPeriod),
       createdAt: isTimestamp(raw.createdAt) ? raw.createdAt : 0,
     }
   }
@@ -240,11 +262,11 @@
     }
   }
 
-  const backupCorrupt = (raw) => {
+  const backupRaw = (key, raw) => {
     try {
-      window.localStorage.setItem(CORRUPT_BACKUP_KEY, raw)
+      window.localStorage.setItem(key, raw)
     } catch {
-      // Best effort only: the backup is a courtesy, and failing to write it must not stop the app.
+      // Best effort only: a backup is a courtesy, and failing to write it must not stop the app.
     }
   }
 
@@ -256,24 +278,60 @@
     try {
       return normalize(JSON.parse(raw))
     } catch {
-      backupCorrupt(raw)
+      backupRaw(CORRUPT_BACKUP_KEY, raw)
       setWarning(`Saved data couldn't be read, so the tracker started fresh. The original was kept under "${CORRUPT_BACKUP_KEY}".`)
       return emptyState()
     }
   }
 
-  const writePersisted = (state) => {
+  const writeRaw = (text) => {
     try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+      window.localStorage.setItem(STORAGE_KEY, text)
       return true
     } catch {
       return false
     }
   }
 
+  const writePersisted = (state) => writeRaw(JSON.stringify(state))
+
   const goMemoryOnly = (message) => {
     persistent = false
     setWarning(message)
+  }
+
+  const SAVE_FAILED = "Couldn't save to browser storage (it may be full or blocked). Changes are kept only while this tab is open, so use Export to back them up."
+
+  // ---- Upgrading saved data -------------------------------------------------
+
+  // Saved by an older version. Data from a newer version is left alone rather than downgraded.
+  const isOutdated = (raw) => isObject(raw) && !(Number(raw.version) >= SCHEMA_VERSION)
+
+  // Stored text → the same data in the current shape, or null when there's nothing to upgrade (current, newer or unreadable).
+  const upgradeText = (raw) => {
+    const parsed = (() => {
+      try {
+        return JSON.parse(raw)
+      } catch {
+        return null
+      }
+    })()
+    return isOutdated(parsed) ? JSON.stringify(normalize(parsed)) : null
+  }
+
+  /*
+   * normalize() already reads old data correctly, but on its own the stored
+   * copy would stay in the old shape until the next change. This rewrites it
+   * once, on the first load after an upgrade, keeping the original under
+   * UPGRADE_BACKUP_KEY. Unreadable data is left for readPersisted to back up
+   * as corrupt.
+   */
+  const upgradeStored = () => {
+    const { raw } = readRaw()
+    const upgraded = raw === null ? null : upgradeText(raw)
+    if (upgraded === null) return
+    backupRaw(UPGRADE_BACKUP_KEY, raw)
+    if (!writeRaw(upgraded)) goMemoryOnly(SAVE_FAILED)
   }
 
   /*
@@ -285,9 +343,7 @@
     const next = mutator(base)
     const changed = next !== memoryState
     memoryState = next
-    if (next !== base && persistent && !writePersisted(next)) {
-      goMemoryOnly("Couldn't save to browser storage (it may be full or blocked). Changes are kept only while this tab is open, so use Export to back them up.")
-    }
+    if (next !== base && persistent && !writePersisted(next)) goMemoryOnly(SAVE_FAILED)
     if (changed) notify()
   }
 
@@ -353,6 +409,7 @@
 
   if (probeStorage()) {
     persistent = true
+    upgradeStored()
     memoryState = readPersisted() || emptyState()
   } else {
     goMemoryOnly("This browser is blocking storage, so tracked time will be lost when this tab closes. Use Export to keep a copy.")
@@ -363,12 +420,16 @@
   window.TimeTracker.store = Object.freeze({
     STORAGE_KEY,
     CORRUPT_BACKUP_KEY,
+    UPGRADE_BACKUP_KEY,
+    SCHEMA_VERSION,
     STORAGE_LIMIT,
     PALETTE,
     NAME_MAX_LENGTH,
     GOAL_MIN,
     GOAL_MAX,
     DEFAULT_GOAL_MINUTES,
+    DEFAULT_PERIOD_GOAL_MINUTES,
+    periodGoalMax,
     DARK_TEXT,
     DARK_SURFACE_MUTED,
     contrastRatio,
@@ -376,6 +437,8 @@
     darkEdge,
     emptyState,
     normalize,
+    isOutdated,
+    upgradeText,
     addTask,
     updateTask,
     pauseActive,

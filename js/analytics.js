@@ -1,5 +1,6 @@
 /*
- * Analytics page: today's progress per goal and a 7-day history.
+ * Analytics page: progress toward each task's current goal (today's, this
+ * week's or this month's) and a 7-day history.
  *
  * render() builds the structure whenever the data or the date changes. tick()
  * only rewrites numbers inside it once a second, so screen readers and text
@@ -34,16 +35,17 @@
   }
 
   const buildProgressItem = (task) => {
+    const period = time.periodLabel(task.goalPeriod)
     const percentEl = el('span', { className: 'percent' })
-    const progress = ui.createProgressBar(`${task.name}: progress toward daily goal`)
-    const done = metric('Done')
+    const progress = ui.createProgressBar(`${task.name}: progress toward ${period.toLowerCase()}'s goal`)
+    const done = metric(period)
     const goal = metric('Goal')
     const remaining = metric('Remaining')
     const node = el(
       'li',
       { className: 'progress-item', style: ui.taskColorVars(task.color) },
       el('div', { className: 'progress-item-head' }, el('span', { className: 'dot', 'aria-hidden': 'true' }), el('h3', { className: 'task-name', text: task.name }), percentEl),
-      el('p', { className: 'task-schedule', text: time.describeSchedule(task.weekdayGoals) }),
+      el('p', { className: 'task-schedule', text: time.describeGoal(task) }),
       progress.bar,
       el('dl', { className: 'metrics' }, done.node, goal.node, remaining.node),
     )
@@ -101,6 +103,17 @@
     tableScroll.scrollLeft = tableScroll.scrollWidth
   }
 
+  // A weekly or monthly goal isn't met on any one day, so each day shows only what was tracked toward it.
+  const paintPeriodCell = (cell, task, day, doneMs) => {
+    const tracked = doneMs > 0 ? time.formatShort(doneMs) : ''
+    setText(cell.valueEl, tracked || '—')
+    setText(cell.srEl, tracked ? '' : 'nothing tracked')
+    cell.checkEl.hidden = true
+    cell.td.classList.remove('is-met')
+    cell.td.classList.toggle('is-empty', doneMs === 0)
+    cell.td.title = `${day}: ${tracked || 'nothing'} tracked toward ${time.describeGoal(task)}`
+  }
+
   /*
    * Days before the task existed, and days it isn't scheduled, have no goal to
    * measure against. Time tracked on an unscheduled day is still shown, but
@@ -109,6 +122,10 @@
   const paintCell = (cell, task, dayStart, doneMs) => {
     const day = time.formatMonthDay(dayStart)
     const beforeCreated = dayStart < time.startOfDay(task.createdAt) && doneMs === 0
+    if (!beforeCreated && task.goalPeriod !== 'day') {
+      paintPeriodCell(cell, task, day, doneMs)
+      return
+    }
     const goalMinutes = time.weekdayGoal(task.weekdayGoals, dayStart)
     const off = !beforeCreated && goalMinutes === 0
     const progress = time.goalProgress(doneMs, goalMinutes)
@@ -134,12 +151,13 @@
     const sessions = time.withActive(state.sessions, state.active, now)
     const today = time.startOfDay(now)
 
+    // Today for a daily task, otherwise this week or this month so far.
     const todays = state.tasks.map((task) => {
-      const doneMs = time.totalForDay(sessions, today, task.id)
-      const goalMinutes = time.weekdayGoal(task.weekdayGoals, now)
+      const { minutes: goalMinutes, start, end } = time.goalFor(task, now)
+      const doneMs = time.totalForRange(sessions, start, end, task.id)
       return { task, doneMs, goalMinutes, progress: time.goalProgress(doneMs, goalMinutes) }
     })
-    // Tasks that are off today don't count toward "goals met" either way.
+    // Daily tasks that are off today don't count toward "goals met" either way.
     const scheduled = todays.filter((t) => t.goalMinutes > 0)
 
     setText(todayLabel, time.formatLongDate(now))

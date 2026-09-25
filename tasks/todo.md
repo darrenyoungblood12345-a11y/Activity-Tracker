@@ -122,3 +122,36 @@ Plan: `~/.claude/plans/system-reminder-you-are-operating-twinkly-token.md`
 - `tests.html` stays. It's the project's only automated coverage, and no app page loads it.
 - "Timer" is still used where it means the running stopwatch (`toggleTimer`, `role="timer"`, "the running timer"). Only the page's name changed.
 - Earlier sections of this log still say "Timers page", because that's what the page was called when they were written.
+
+---
+
+# Weekly and monthly goals + saved-data upgrade
+
+Plan: `~/.claude/plans/system-reminder-you-are-operating-scalable-quilt.md`
+
+## Build
+- [x] `js/storage.js`: `goalPeriod` + `periodGoalMinutes`, schema v3, one-time `upgradeStored` with `timeTracker.v1.pre-upgrade` backup
+- [x] `js/time.js`: `periodRange`, `goalFor`, `periodLabel`, `describeGoal`
+- [x] `js/activities.js` + `index.html`: Day / Week / Month picker, hours + minutes fields, period-aware cards
+- [x] `css/styles.css`: `.period-picker`, `.duration-inputs`
+- [x] `js/analytics.js` + `analytics/index.html`: period-aware progress, goals met, 7-day cells
+- [x] `js/settings.js`: pre-upgrade backup row
+- [x] `tests.html`: updated fixtures + new groups
+- [x] `README.md`
+
+## Verify
+- [x] tests.html all green (68/68)
+- [x] Weekly task add, validation, daily ⇄ monthly edit round trip
+- [x] Seeded week: card totals, Analytics
+- [x] v1 and v2 data rewritten to v3 in localStorage, backup kept, second load is a no-op
+- [x] 320/375px, dark theme, no console errors
+- [x] Storage restored
+
+## Review
+- A task now has `goalPeriod` (`day` / `week` / `month`), and keeps both `weekdayGoals` and `periodGoalMinutes` whichever is active. The editor saves only the active period's fields, and `updateTask` merges, so switching daily → weekly → daily restores the old days. This was checked in the browser.
+- Everything goal-related goes through `time.goalFor(task, ms)`, which returns the minutes and the `[start, end)` range. Cards, the tab title, Analytics and "Goals met" all total that range with the existing `totalForRange`, so there's no second totals path.
+- Old data used to be converted only in memory, so the stored JSON stayed in the old shape until the next save. `upgradeStored()` now rewrites it once at startup and keeps the original text under `timeTracker.v1.pre-upgrade`. `upgradeText` is pure, which keeps `tests.html` from ever writing storage. `writePersisted` stringifies its argument, so the converted text goes through a new `writeRaw`, not `writePersisted`. Otherwise it would have been double-encoded.
+- Caught while building: `readTaskFields` read the color with `input[type="radio"]:checked`, which would now have matched the Day/Week/Month radios first. It's now scoped to `.swatch input:checked`.
+- Wrapping the day controls in `.day-block` dropped the fieldset's flex gap and broke the `.field-schedule > .field` width rule. Both are fixed in CSS.
+- Known limit: a tab left open from before the upgrade still runs the old code, and its next save writes v2 again. The next load of the new code simply upgrades it again. The README says to reload old tabs.
+- This origin's storage was empty before testing, and it was cleared again afterwards.
