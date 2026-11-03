@@ -1,11 +1,14 @@
 /*
- * Activities page: create tasks and start/pause each task's stopwatch.
+ * Activities page: the stage. The rail (ui.mountRail) lists every task; the
+ * stage shows one of them, the selected task, at full size with its
+ * stopwatch, goal and controls, and it holds the add and edit forms.
  *
- * Cards are keyed by task id and patched in place on every render. Rebuilding
- * them would wipe a half-typed edit form, or steal focus, whenever another
- * tab changes the data. Tasks scheduled today are listed first; the rest sit
- * in a "Not scheduled today" section and can still be started. Weekly and
- * monthly tasks have no off days, so they're always listed first.
+ * Only one timer runs at a time, so while the selected task runs the stage
+ * floods with its color. The selection lives in the URL hash (#task-<id>, or
+ * #add), so the rail's links work from every page and a reload keeps your
+ * place. Starting a task selects it. The stage is built once and patched in
+ * place: rebuilding it would wipe a half-typed edit form, or steal focus,
+ * whenever another tab changes the data.
  */
 (function () {
   'use strict'
@@ -32,19 +35,43 @@
   ]
   const MINUTES_PER_HOUR = 60
 
+  const stage = document.getElementById('main')
+  const viewEl = document.getElementById('stage-view')
+  const displayEl = document.getElementById('stage-display')
+  const statusEl = document.getElementById('stage-status')
+  const todayLabel = document.getElementById('today-label')
+  const nameEl = document.getElementById('stage-name')
+  const scheduleEl = document.getElementById('stage-schedule')
+  const timeEl = document.getElementById('stage-time')
+  const goalEl = document.getElementById('stage-goal')
+  const remainingEl = document.getElementById('stage-remaining')
+  const lastEl = document.getElementById('stage-last')
+  const actionsEl = document.getElementById('stage-actions')
+  const toggleBtn = document.getElementById('stage-toggle')
+  const editBtn = document.getElementById('stage-edit')
+  const deleteBtn = document.getElementById('stage-delete')
+  const confirmBox = document.getElementById('stage-confirm')
+  const confirmText = document.getElementById('stage-confirm-text')
+  const confirmBtn = document.getElementById('confirm-delete')
+  const cancelDeleteBtn = document.getElementById('cancel-delete')
+  const addSection = document.getElementById('stage-add')
+  const addTitle = document.getElementById('add-task-heading')
+  const addIntro = document.getElementById('add-intro')
+  const cancelAddBtn = document.getElementById('cancel-add')
   const form = document.getElementById('add-task-form')
   const nameInput = document.getElementById('new-task-name')
   const scheduleMount = document.getElementById('new-task-schedule')
   const colorsBox = document.getElementById('new-task-colors')
-  const listEl = document.getElementById('task-list')
-  const otherSection = document.getElementById('other-section')
-  const otherListEl = document.getElementById('other-task-list')
-  const emptyEl = document.getElementById('empty-state')
-  const noneTodayEl = document.getElementById('none-today')
   const liveStatus = document.getElementById('live-status')
-  const todayLabel = document.getElementById('today-label')
 
-  const cards = new Map()
+  // The page grounds (--bg in css/styles.css). A task color this close to one barely changes the stage when it floods.
+  const GROUNDS = Object.freeze({ light: '#f5f4f7', dark: '#121016' })
+  const NEAR_GROUND = 1.5
+
+  // 'view' (the selected task), 'confirm' (deleting it), 'edit' (editing it) or 'add' (the add form).
+  let mode = 'view'
+  let selectedId = null
+  let lastActiveId = null
   let renderedDayKey = ''
 
   const findTask = (taskId) => store.getState().tasks.find((t) => t.id === taskId)
@@ -375,179 +402,109 @@
     return { name, ...goal, color: checked ? checked.value : fallbackColor }
   }
 
-  // ---- Actions ------------------------------------------------------------
+  // ---- Selection --------------------------------------------------------------
 
-  const toggleTimer = (taskId) => {
-    const now = Date.now()
-    store.update((state) =>
-      state.active && state.active.taskId === taskId
-        ? store.pauseActive(state, now)
-        : store.startTask(state, taskId, now),
-    )
+  // The running task, else the first one scheduled today, else the first one.
+  const defaultTaskId = (state, now) => {
+    if (state.active) return state.active.taskId
+    const first = state.tasks.find((task) => isScheduledOn(task, now)) || state.tasks[0]
+    return first ? first.id : null
   }
 
-  const setMode = (card, mode) => {
-    card.mode = mode
-    card.view.hidden = mode === 'edit'
-    card.actions.hidden = mode !== 'view'
-    card.editForm.hidden = mode !== 'edit'
-    card.confirmBox.hidden = mode !== 'confirm'
+  // "#task-<id>" or "#add", as written by the rail's links.
+  const readHash = () => {
+    const hash = decodeURIComponent(window.location.hash.slice(1))
+    if (hash === 'add') return { add: true }
+    return hash.startsWith('task-') ? { taskId: hash.slice('task-'.length) } : {}
   }
 
-  const openEdit = (taskId) => {
-    const card = cards.get(taskId)
-    const task = findTask(taskId)
-    if (!card || !task) return
-    // Inputs are filled only when editing starts, so later re-renders never overwrite what's being typed.
-    card.editName.value = task.name
-    card.schedule.setValue(task)
-    selectColor(card.editSwatches, task.color)
-    setFieldError(card.editName, '')
-    setMode(card, 'edit')
-    card.editName.focus()
+  // replaceState doesn't fire hashchange, and keeps Back from stepping through every selection.
+  const writeHash = () => {
+    const hash = mode === 'add' ? '#add' : selectedId ? `#task-${selectedId}` : ''
+    if (window.location.hash === hash) return
+    window.history.replaceState(null, '', hash || window.location.pathname + window.location.search)
   }
 
-  const closeEdit = (taskId) => {
-    const card = cards.get(taskId)
-    if (!card) return
-    setMode(card, 'view')
-    card.editBtn.focus()
+  // On phones the rail's list sits below the stage, so bring the stage back into view.
+  const revealStage = () => {
+    if (stage.getBoundingClientRect().top < 0) stage.scrollIntoView({ block: 'start' })
   }
 
-  const saveEdit = (taskId) => {
-    const card = cards.get(taskId)
-    const task = findTask(taskId)
-    if (!card || !task) return
-    const fields = readTaskFields(card.editForm, card.schedule, task.color)
-    if (!fields) return
-    store.update((state) => store.updateTask(state, taskId, fields))
-    setMode(card, 'view')
-    card.editBtn.focus()
-    announce(`Saved ${fields.name}.`)
-  }
+  // ---- Stage --------------------------------------------------------------------
 
-  const openConfirm = (taskId) => {
-    const card = cards.get(taskId)
-    const task = findTask(taskId)
-    if (!card || !task) return
-    card.confirmText.textContent = `Delete “${task.name}” and all of its tracked time? This can't be undone.`
-    setMode(card, 'confirm')
-    // Focus the safe choice, so a stray Enter doesn't delete anything.
-    card.cancelDeleteBtn.focus()
-  }
+  const progress = ui.createProgressBar('Goal progress')
+  document.getElementById('stage-progress').replaceWith(progress.bar)
 
-  const cancelDelete = (taskId) => {
-    const card = cards.get(taskId)
-    if (!card) return
-    setMode(card, 'view')
-    card.deleteBtn.focus()
-  }
+  const remainingIcon = el('span', { className: 'remaining-icon', 'aria-hidden': 'true' }, ui.icon('check'))
+  const remainingLabel = el('span')
+  remainingEl.append(remainingIcon, remainingLabel)
 
-  const confirmDelete = (taskId) => {
-    const before = store.getState().tasks
-    const index = before.findIndex((t) => t.id === taskId)
-    const task = before[index]
-    if (!task) return
-    store.update((state) => store.deleteTask(state, taskId))
-    // Put focus somewhere sensible, since the focused card no longer exists.
-    const remaining = store.getState().tasks
-    const neighbour = remaining[Math.min(index, remaining.length - 1)]
-    const target = neighbour && cards.get(neighbour.id)
-    if (target) target.toggleBtn.focus()
-    else nameInput.focus()
-    announce(`Deleted ${task.name}.`)
-  }
+  const toggleIcon = el('span', { className: 'toggle-icon' })
+  const toggleLabel = el('span')
+  toggleBtn.append(toggleIcon, toggleLabel)
 
-  // ---- Cards --------------------------------------------------------------
-
-  const createCard = (taskId) => {
-    const nameEl = el('h3', { className: 'task-name' })
-    const badge = el('span', { className: 'badge', text: 'Running', hidden: true })
-    const scheduleEl = el('p', { className: 'task-schedule' })
-    const periodEl = el('p', { className: 'time-label' })
-    const timeEl = el('p', { className: 'task-time', role: 'timer' })
-    const goalEl = el('p', { className: 'task-goal' })
-    const remainingEl = el('p', { className: 'task-remaining' })
-    const progress = ui.createProgressBar('Goal progress')
-    const toggleBtn = el('button', { type: 'button', className: 'btn btn-toggle', onClick: () => toggleTimer(taskId) })
-    const editBtn = el('button', { type: 'button', className: 'btn btn-quiet', text: 'Edit', onClick: () => openEdit(taskId) })
-    const deleteBtn = el('button', { type: 'button', className: 'btn btn-quiet btn-quiet-danger', text: 'Delete', onClick: () => openConfirm(taskId) })
-    const actions = el('div', { className: 'btn-row card-actions' }, toggleBtn, editBtn, deleteBtn)
-
-    const view = el(
+  const editTitle = el('h2', { className: 'stage-form-title', id: ui.uid('edit-title') })
+  const editNameId = ui.uid('edit-name')
+  const editName = el('input', {
+    id: editNameId,
+    name: 'name',
+    type: 'text',
+    maxlength: store.NAME_MAX_LENGTH,
+    autocomplete: 'off',
+    required: true,
+    'aria-describedby': `${editNameId}-error`,
+  })
+  const editSchedule = createScheduleEditor()
+  const editSwatches = el('div', { className: 'swatches' }, buildSwatches(ui.uid('edit-color'), null))
+  const editForm = el(
+    'form',
+    { className: 'form-grid', novalidate: true, 'aria-labelledby': editTitle.id },
+    field(editNameId, 'Task name', editName),
+    editSchedule.node,
+    el('fieldset', { className: 'field' }, el('legend', { text: 'Color' }), editSwatches),
+    el(
       'div',
-      { className: 'card-view' },
-      el('div', { className: 'task-head' }, el('span', { className: 'dot', 'aria-hidden': 'true' }), nameEl, badge),
-      scheduleEl,
-      periodEl,
-      timeEl,
-      el('div', { className: 'goal-row' }, goalEl, remainingEl),
-      progress.bar,
-    )
+      { className: 'btn-row' },
+      el('button', { type: 'submit', className: 'btn btn-primary', text: 'Save' }),
+      el('button', { type: 'button', className: 'btn btn-quiet', text: 'Cancel', onClick: () => closeEdit() }),
+    ),
+  )
+  const editSection = el('div', { className: 'stage-edit', hidden: true }, el('div', { className: 'stage-form-head' }, editTitle), editForm)
+  viewEl.append(editSection)
 
-    const editNameId = ui.uid('edit-name')
-    const editName = el('input', {
-      id: editNameId,
-      name: 'name',
-      type: 'text',
-      maxlength: store.NAME_MAX_LENGTH,
-      autocomplete: 'off',
-      required: true,
-      'aria-describedby': `${editNameId}-error`,
-    })
-    const schedule = createScheduleEditor()
-    const editSwatches = el('div', { className: 'swatches' }, buildSwatches(ui.uid('edit-color'), null))
-    const cancelEditBtn = el('button', { type: 'button', className: 'btn', text: 'Cancel', onClick: () => closeEdit(taskId) })
-    const editForm = el(
-      'form',
-      { className: 'card-edit', novalidate: true, hidden: true, 'aria-label': 'Edit task' },
-      field(editNameId, 'Task name', editName),
-      schedule.node,
-      el('fieldset', { className: 'field' }, el('legend', { text: 'Color' }), editSwatches),
-      el('div', { className: 'btn-row' }, el('button', { type: 'submit', className: 'btn btn-primary', text: 'Save' }), cancelEditBtn),
-    )
-    editForm.addEventListener('submit', (event) => {
-      event.preventDefault()
-      saveEdit(taskId)
-    })
-    editForm.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape') closeEdit(taskId)
-    })
-    clearErrorsOnInput(editForm)
-
-    const confirmText = el('p', { className: 'confirm-text' })
-    const confirmBtn = el('button', { type: 'button', className: 'btn btn-danger', text: 'Delete', onClick: () => confirmDelete(taskId) })
-    const cancelDeleteBtn = el('button', { type: 'button', className: 'btn', text: 'Cancel', onClick: () => cancelDelete(taskId) })
-    const confirmBox = el(
-      'div',
-      { className: 'inline-confirm', role: 'group', 'aria-label': 'Confirm delete', hidden: true },
-      confirmText,
-      el('div', { className: 'btn-row' }, confirmBtn, cancelDeleteBtn),
-    )
-    confirmBox.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape') cancelDelete(taskId)
-    })
-
-    const root = el('li', { className: 'task-card' }, view, actions, editForm, confirmBox)
-
-    return {
-      root, view, actions, nameEl, badge, scheduleEl, periodEl, timeEl, goalEl, remainingEl, progress,
-      toggleBtn, editBtn, deleteBtn, editForm, editName, schedule, editSwatches,
-      confirmBox, confirmText, confirmBtn, cancelDeleteBtn, mode: 'view',
-    }
+  const applyMode = (hasTasks) => {
+    const adding = mode === 'add'
+    addSection.hidden = !adding
+    viewEl.hidden = adding || !selectedId
+    displayEl.hidden = mode === 'edit'
+    actionsEl.hidden = mode !== 'view'
+    confirmBox.hidden = mode !== 'confirm'
+    editSection.hidden = mode !== 'edit'
+    // With no tasks yet, the add form is the whole page, so it introduces itself and has nothing to cancel back to.
+    setText(addTitle, hasTasks ? 'Add a task' : 'Add your first task')
+    addIntro.hidden = hasTasks
+    cancelAddBtn.hidden = !hasTasks
   }
 
-  // Parts of a card that change only when the task itself changes.
-  const paintStatic = (card, task) => {
-    ui.setTaskColor(card.root, task.color)
-    setText(card.nameEl, task.name)
-    const period = time.periodLabel(task.goalPeriod)
-    setText(card.scheduleEl, time.describeGoal(task))
-    setText(card.periodEl, period)
-    card.progress.bar.setAttribute('aria-label', `${task.name}: progress toward ${period.toLowerCase()}'s goal`)
-    card.editBtn.setAttribute('aria-label', `Edit ${task.name}`)
-    card.deleteBtn.setAttribute('aria-label', `Delete ${task.name}`)
-    card.confirmBtn.setAttribute('aria-label', `Delete ${task.name} permanently`)
+  // The most recent stretch tracked on a task, if it ended today.
+  const lastSessionToday = (state, taskId, now) => {
+    const last = state.sessions
+      .filter((s) => s.taskId === taskId)
+      .reduce((latest, s) => (!latest || s.end > latest.end ? s : latest), null)
+    return last && last.end >= time.startOfDay(now) ? last : null
+  }
+
+  // Parts of the stage that change only when the data or the selection changes.
+  const paintStatic = (task) => {
+    ui.setTaskColor(stage, task.color)
+    stage.classList.toggle('is-near-light', store.contrastRatio(task.color, GROUNDS.light) < NEAR_GROUND)
+    stage.classList.toggle('is-near-dark', store.contrastRatio(task.color, GROUNDS.dark) < NEAR_GROUND)
+    setText(nameEl, task.name)
+    setText(scheduleEl, time.describeGoal(task))
+    progress.bar.setAttribute('aria-label', `${task.name}: progress toward ${time.periodLabel(task.goalPeriod).toLowerCase()}'s goal`)
+    editBtn.setAttribute('aria-label', `Edit ${task.name}`)
+    deleteBtn.setAttribute('aria-label', `Delete ${task.name}`)
+    confirmBtn.setAttribute('aria-label', `Delete ${task.name} permanently`)
   }
 
   /*
@@ -568,69 +525,182 @@
     const periodTotal = (task, goal = time.goalFor(task, now)) => time.totalForRange(sessions, goal.start, goal.end, task.id)
     setText(todayLabel, time.formatLongDate(now))
 
-    state.tasks.forEach((task) => {
-      const card = cards.get(task.id)
-      if (!card) return
-      const goal = time.goalFor(task, now)
-      const doneMs = periodTotal(task, goal)
-      const off = goal.minutes === 0
-      const progress = time.goalProgress(doneMs, goal.minutes)
-      const running = Boolean(state.active && state.active.taskId === task.id)
-      const action = running ? 'Pause' : doneMs > 0 ? 'Resume' : 'Start'
-      setText(card.timeEl, time.formatHMS(doneMs))
-      setText(card.goalEl, off ? 'Not scheduled today' : `Goal: ${time.formatGoal(goal.minutes)}`)
-      setText(card.remainingEl, off ? '' : ui.remainingText(progress))
-      ui.setProgress(card.progress, progress)
-      card.progress.bar.hidden = off
-      setText(card.toggleBtn, action)
-      card.toggleBtn.setAttribute('aria-label', `${action} ${task.name}`)
-      card.toggleBtn.classList.toggle('is-running', running)
-      card.root.classList.toggle('is-running', running)
-      card.root.classList.toggle('is-met', progress.met)
-      card.root.classList.toggle('is-off', off)
-      card.badge.hidden = !running
-    })
-
     const activeTask = state.active && state.tasks.find((t) => t.id === state.active.taskId)
     document.title = activeTask
       ? `${time.formatHMS(periodTotal(activeTask))} · ${activeTask.name} · Time Tracker`
       : BASE_TITLE
-  }
 
-  // Only move nodes that are out of place: moving a node drops focus inside it.
-  const placeCards = (container, tasks) =>
-    tasks.forEach((task, index) => {
-      const { root } = cards.get(task.id)
-      if (container.children[index] !== root) container.insertBefore(root, container.children[index] || null)
-    })
+    const task = findTask(selectedId)
+    const running = Boolean(task && activeTask && activeTask.id === task.id)
+    // The flood belongs to the task view; the forms always sit on the plain stage.
+    stage.classList.toggle('is-running', running && (mode === 'view' || mode === 'confirm'))
+    if (!task) return
+
+    const goal = time.goalFor(task, now)
+    const doneMs = periodTotal(task, goal)
+    const off = goal.minutes === 0
+    const goalProgress = time.goalProgress(doneMs, goal.minutes)
+    const action = running ? 'Pause' : doneMs > 0 ? 'Resume' : 'Start'
+    const period = time.periodLabel(task.goalPeriod)
+    const last = running ? null : lastSessionToday(state, task.id, now)
+
+    setText(statusEl, running ? `${period} · running since ${time.formatClock(state.active.start)}` : period)
+    setText(timeEl, time.formatHMS(doneMs))
+    setText(goalEl, off ? 'Not scheduled today' : `Goal: ${time.formatGoal(goal.minutes)}`)
+    setText(remainingLabel, off ? '' : ui.remainingText(goalProgress))
+    remainingIcon.hidden = off || !goalProgress.met
+    ui.setProgress(progress, goalProgress)
+    progress.bar.hidden = off
+    setText(lastEl, last ? `Last session: ${time.formatShort(last.end - last.start)}, ended at ${time.formatClock(last.end)}.` : '')
+    lastEl.hidden = !last
+    ui.setIcon(toggleIcon, running ? 'pause' : 'play')
+    setText(toggleLabel, action)
+    toggleBtn.setAttribute('aria-label', `${action} ${task.name}`)
+    stage.classList.toggle('is-met', goalProgress.met)
+  }
 
   const render = (now = Date.now()) => {
-    const { tasks } = store.getState()
-    const ids = new Set(tasks.map((t) => t.id))
-    const today = tasks.filter((task) => isScheduledOn(task, now))
-    const others = tasks.filter((task) => !isScheduledOn(task, now))
+    const state = store.getState()
+    const activeId = state.active ? state.active.taskId : null
     renderedDayKey = time.dayKey(now)
-    emptyEl.hidden = tasks.length > 0
-    noneTodayEl.hidden = tasks.length === 0 || today.length > 0
-    listEl.hidden = today.length === 0
-    otherSection.hidden = others.length === 0
 
-    Array.from(cards.keys())
-      .filter((id) => !ids.has(id))
-      .forEach((id) => {
-        cards.get(id).root.remove()
-        cards.delete(id)
-      })
+    // Starting a task, here, in the rail or in another tab, puts it on stage, unless a form is open.
+    if (activeId && activeId !== lastActiveId && mode === 'view') selectedId = activeId
+    lastActiveId = activeId
 
-    tasks.forEach((task) => {
-      if (!cards.has(task.id)) cards.set(task.id, createCard(task.id))
-      paintStatic(cards.get(task.id), task)
-    })
-    placeCards(listEl, today)
-    placeCards(otherListEl, others)
+    // The selected task was deleted, or nothing has been chosen yet.
+    if (!findTask(selectedId)) {
+      selectedId = defaultTaskId(state, now)
+      if (mode !== 'add') mode = 'view'
+    }
+    if (state.tasks.length === 0) mode = 'add'
 
+    const task = findTask(selectedId)
+    applyMode(state.tasks.length > 0)
+    if (task) paintStatic(task)
+    rail.setSelected(mode === 'add' ? 'add' : selectedId)
+    writeHash()
     tick(now)
   }
+
+  // ---- Actions ------------------------------------------------------------
+
+  const select = (taskId) => {
+    selectedId = taskId
+    mode = 'view'
+    render()
+  }
+
+  const openEdit = () => {
+    const task = findTask(selectedId)
+    if (!task) return
+    // Inputs are filled only when editing starts, so later re-renders never overwrite what's being typed.
+    setText(editTitle, `Edit ${task.name}`)
+    editName.value = task.name
+    editSchedule.setValue(task)
+    selectColor(editSwatches, task.color)
+    setFieldError(editName, '')
+    mode = 'edit'
+    render()
+    editName.focus()
+  }
+
+  const closeEdit = () => {
+    mode = 'view'
+    render()
+    editBtn.focus()
+  }
+
+  const saveEdit = () => {
+    const task = findTask(selectedId)
+    if (!task) return
+    const fields = readTaskFields(editForm, editSchedule, task.color)
+    if (!fields) return
+    mode = 'view'
+    store.update((state) => store.updateTask(state, task.id, fields))
+    editBtn.focus()
+    announce(`Saved ${fields.name}.`)
+  }
+
+  const openConfirm = () => {
+    const task = findTask(selectedId)
+    if (!task) return
+    confirmText.textContent = `Delete “${task.name}” and all of its tracked time? This can't be undone.`
+    mode = 'confirm'
+    render()
+    // Focus the safe choice, so a stray Enter doesn't delete anything.
+    cancelDeleteBtn.focus()
+  }
+
+  const cancelDelete = () => {
+    mode = 'view'
+    render()
+    deleteBtn.focus()
+  }
+
+  const confirmDelete = () => {
+    const before = store.getState().tasks
+    const index = before.findIndex((t) => t.id === selectedId)
+    const task = before[index]
+    if (!task) return
+    // Show the task that takes its place in the list, so focus has somewhere sensible to go.
+    const remaining = before.filter((t) => t.id !== task.id)
+    const neighbour = remaining[Math.min(index, remaining.length - 1)]
+    selectedId = neighbour ? neighbour.id : null
+    mode = 'view'
+    store.update((state) => store.deleteTask(state, task.id))
+    if (neighbour) toggleBtn.focus()
+    else nameInput.focus()
+    announce(`Deleted ${task.name}.`)
+  }
+
+  const openAdd = () => {
+    mode = 'add'
+    render()
+    revealStage()
+    nameInput.focus()
+  }
+
+  const closeAdd = () => {
+    if (store.getState().tasks.length === 0) return
+    mode = 'view'
+    render()
+    toggleBtn.focus()
+  }
+
+  toggleBtn.addEventListener('click', () => {
+    if (selectedId) ui.toggleTimer(selectedId)
+  })
+  editBtn.addEventListener('click', openEdit)
+  deleteBtn.addEventListener('click', openConfirm)
+  confirmBtn.addEventListener('click', confirmDelete)
+  cancelDeleteBtn.addEventListener('click', cancelDelete)
+  cancelAddBtn.addEventListener('click', closeAdd)
+
+  editForm.addEventListener('submit', (event) => {
+    event.preventDefault()
+    saveEdit()
+  })
+  editForm.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeEdit()
+  })
+  clearErrorsOnInput(editForm)
+
+  confirmBox.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') cancelDelete()
+  })
+
+  window.addEventListener('hashchange', () => {
+    const target = readHash()
+    if (target.add) {
+      openAdd()
+      return
+    }
+    if (target.taskId && findTask(target.taskId)) {
+      select(target.taskId)
+      revealStage()
+    }
+  })
 
   // ---- Add form -------------------------------------------------------------
 
@@ -648,14 +718,22 @@
     const fields = readTaskFields(form, addSchedule, store.nextColor(store.getState()))
     if (!fields) return
     const now = Date.now()
+    const countBefore = store.getState().tasks.length
     store.update((state) => store.addTask(state, fields, now))
+    const { tasks } = store.getState()
+    if (tasks.length === countBefore) return
+    // New tasks are appended, so the last one is the one just added. Put it on stage, ready to start.
     resetAddForm()
-    nameInput.focus()
+    select(tasks[tasks.length - 1].id)
+    toggleBtn.focus()
     announce(
       isScheduledOn(fields, now)
-        ? `Added ${fields.name}. Press Start on its card to begin tracking.`
-        : `Added ${fields.name}. It isn't scheduled today, so it's listed under Not scheduled today.`,
+        ? `Added ${fields.name}. Press Start to begin tracking.`
+        : `Added ${fields.name}. It isn't scheduled today, so it's listed under Not today.`,
     )
+  })
+  form.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeAdd()
   })
   clearErrorsOnInput(form)
 
@@ -665,6 +743,15 @@
   addSchedule.setValue(DEFAULT_GOAL)
   colorsBox.append(...buildSwatches('color', store.nextColor(store.getState())))
   ui.mountChrome()
+  const rail = ui.mountRail()
+
+  const initial = readHash()
+  if (initial.add) mode = 'add'
+  else if (initial.taskId) selectedId = initial.taskId
+  // A task already running at load doesn't override the task the link asked for.
+  const { active } = store.getState()
+  lastActiveId = active ? active.taskId : null
+
   // Subscribers receive the state as an argument; render's only parameter is `now`.
   store.subscribe(() => render())
   render()
