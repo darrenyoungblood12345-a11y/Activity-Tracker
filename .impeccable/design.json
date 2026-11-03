@@ -1,0 +1,978 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-03T18:12:55.440Z",
+  "title": "Design System: Time Tracker",
+  "extensions": {
+    "colorMeta": {
+      "ground": {
+        "role": "neutral",
+        "displayName": "Lilac-Grey Ground",
+        "canonical": "#f5f4f7",
+        "theme": "light",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#272628",
+          "#454447",
+          "#666568",
+          "#89898b",
+          "#aeadaf",
+          "#d1d1d2",
+          "#eeeeef"
+        ]
+      },
+      "rail": {
+        "role": "neutral",
+        "displayName": "Rail Ink-Wash",
+        "canonical": "#ebe9f0",
+        "theme": "light",
+        "tonalRamp": [
+          "#0b0b0d",
+          "#27262a",
+          "#464449",
+          "#67656b",
+          "#8a888e",
+          "#aeadb2",
+          "#d1d0d4",
+          "#eeeeef"
+        ]
+      },
+      "rail-raised": {
+        "role": "neutral",
+        "displayName": "Rail Raised",
+        "canonical": "#dcd9e3",
+        "theme": "light",
+        "tonalRamp": [
+          "#0c0a0e",
+          "#27252b",
+          "#46444b",
+          "#67646d",
+          "#8a8790",
+          "#afadb4",
+          "#d1d0d5",
+          "#efeef0"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Surface",
+        "canonical": "#ffffff",
+        "theme": "light",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#262626",
+          "#454545",
+          "#666666",
+          "#898989",
+          "#aeaeae",
+          "#d1d1d1",
+          "#eeeeee"
+        ]
+      },
+      "surface-muted": {
+        "role": "neutral",
+        "displayName": "Surface Muted",
+        "canonical": "#efedf3",
+        "theme": "light",
+        "tonalRamp": [
+          "#0b0b0d",
+          "#272629",
+          "#464449",
+          "#67656a",
+          "#8a888d",
+          "#aeadb1",
+          "#d1d0d3",
+          "#eeeeef"
+        ]
+      },
+      "text": {
+        "role": "neutral",
+        "displayName": "Text",
+        "canonical": "#17151c",
+        "theme": "light",
+        "tonalRamp": [
+          "#0b0b0e",
+          "#27252b",
+          "#46444b",
+          "#67646d",
+          "#8a8890",
+          "#aeadb4",
+          "#d1d0d5",
+          "#eeeef0"
+        ]
+      },
+      "text-muted": {
+        "role": "neutral",
+        "displayName": "Text Muted",
+        "canonical": "#59546a",
+        "theme": "light",
+        "tonalRamp": [
+          "#0c0a12",
+          "#272433",
+          "#464256",
+          "#676279",
+          "#8a859c",
+          "#afabbe",
+          "#d1cfdb",
+          "#efeef3"
+        ]
+      },
+      "placeholder": {
+        "role": "neutral",
+        "displayName": "Placeholder",
+        "canonical": "#6a6578",
+        "theme": "light",
+        "tonalRamp": [
+          "#0c0a11",
+          "#282431",
+          "#464253",
+          "#686376",
+          "#8b8698",
+          "#afabbb",
+          "#d2cfda",
+          "#efeef2"
+        ]
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Border",
+        "canonical": "#dcd9e2",
+        "theme": "light",
+        "tonalRamp": [
+          "#0c0b0d",
+          "#27252b",
+          "#46444b",
+          "#67646c",
+          "#8a888f",
+          "#afadb3",
+          "#d1d0d4",
+          "#efeef0"
+        ]
+      },
+      "border-strong": {
+        "role": "neutral",
+        "displayName": "Border Strong",
+        "canonical": "#838094",
+        "theme": "light",
+        "tonalRamp": [
+          "#0b0a11",
+          "#272431",
+          "#454253",
+          "#666376",
+          "#898699",
+          "#aeacbb",
+          "#d1cfda",
+          "#eeeef2"
+        ]
+      },
+      "grid-line": {
+        "role": "neutral",
+        "displayName": "Grid Line",
+        "canonical": "#e4e1ea",
+        "theme": "light",
+        "tonalRamp": [
+          "#0c0b0d",
+          "#27252b",
+          "#46444b",
+          "#67646c",
+          "#8a888f",
+          "#afadb3",
+          "#d1d0d4",
+          "#efeef0"
+        ]
+      },
+      "ink": {
+        "role": "primary",
+        "displayName": "Ink",
+        "canonical": "#17151c",
+        "theme": "light",
+        "tonalRamp": [
+          "#0b0b0e",
+          "#27252b",
+          "#46444b",
+          "#67646d",
+          "#8a8890",
+          "#aeadb4",
+          "#d1d0d5",
+          "#eeeef0"
+        ]
+      },
+      "on-ink": {
+        "role": "primary",
+        "displayName": "On Ink",
+        "canonical": "#ffffff",
+        "theme": "light",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#262626",
+          "#454545",
+          "#666666",
+          "#898989",
+          "#aeaeae",
+          "#d1d1d1",
+          "#eeeeee"
+        ]
+      },
+      "today-bg": {
+        "role": "neutral",
+        "displayName": "Today Bg",
+        "canonical": "#eeecf3",
+        "theme": "light",
+        "tonalRamp": [
+          "#0b0b0d",
+          "#27262a",
+          "#464449",
+          "#67656b",
+          "#8a888e",
+          "#aeadb2",
+          "#d1d0d4",
+          "#eeeeef"
+        ]
+      },
+      "danger": {
+        "role": "status",
+        "displayName": "Danger",
+        "canonical": "#b91c1c",
+        "theme": "light",
+        "tonalRamp": [
+          "#280000",
+          "#5b0000",
+          "#8d0000",
+          "#bb1e1e",
+          "#e05349",
+          "#fb887b",
+          "#ffbab0",
+          "#ffe6e1"
+        ]
+      },
+      "danger-soft": {
+        "role": "status",
+        "displayName": "Danger Soft",
+        "canonical": "#fdf1f1",
+        "theme": "light",
+        "tonalRamp": [
+          "#0e0a0a",
+          "#2b2425",
+          "#4b4243",
+          "#6d6363",
+          "#908686",
+          "#b4acac",
+          "#d5cfcf",
+          "#f0eeee"
+        ]
+      },
+      "success": {
+        "role": "status",
+        "displayName": "Success",
+        "canonical": "#166534",
+        "theme": "light",
+        "tonalRamp": [
+          "#001101",
+          "#00310e",
+          "#025426",
+          "#2d7745",
+          "#579b6a",
+          "#88bd94",
+          "#b9dbc0",
+          "#e5f3e8"
+        ]
+      },
+      "warning-bg": {
+        "role": "status",
+        "displayName": "Warning Bg",
+        "canonical": "#fff6dc",
+        "theme": "light",
+        "tonalRamp": [
+          "#0e0b04",
+          "#2b2616",
+          "#4c4530",
+          "#6e664f",
+          "#908973",
+          "#b4ae9b",
+          "#d5d1c5",
+          "#f0eee9"
+        ]
+      },
+      "warning-text": {
+        "role": "status",
+        "displayName": "Warning Text",
+        "canonical": "#5f3f00",
+        "theme": "light",
+        "tonalRamp": [
+          "#150800",
+          "#382100",
+          "#5d3e05",
+          "#815f2a",
+          "#a48352",
+          "#c5a982",
+          "#e0ceb5",
+          "#f5ede3"
+        ]
+      },
+      "ground-dark": {
+        "role": "neutral",
+        "displayName": "Night Ground",
+        "canonical": "#121016",
+        "theme": "dark",
+        "tonalRamp": [
+          "#0b0b0d",
+          "#27252b",
+          "#46444b",
+          "#67656c",
+          "#8a888f",
+          "#afadb3",
+          "#d1d0d4",
+          "#efeef0"
+        ]
+      },
+      "rail-dark": {
+        "role": "neutral",
+        "displayName": "Night Rail",
+        "canonical": "#19171e",
+        "theme": "dark",
+        "tonalRamp": [
+          "#0b0b0e",
+          "#27252b",
+          "#46444b",
+          "#67646d",
+          "#8a8890",
+          "#aeadb4",
+          "#d1d0d5",
+          "#eeeef0"
+        ]
+      },
+      "rail-raised-dark": {
+        "role": "neutral",
+        "displayName": "Night Rail Raised",
+        "canonical": "#2a2631",
+        "theme": "dark",
+        "tonalRamp": [
+          "#0c0a0f",
+          "#28252d",
+          "#47434e",
+          "#686370",
+          "#8b8793",
+          "#afacb6",
+          "#d2cfd7",
+          "#efeef1"
+        ]
+      },
+      "surface-dark": {
+        "role": "neutral",
+        "displayName": "Surface (dark)",
+        "canonical": "#1d1a23",
+        "theme": "dark",
+        "tonalRamp": [
+          "#0c0a0e",
+          "#27252c",
+          "#46434d",
+          "#67646f",
+          "#8a8792",
+          "#afacb5",
+          "#d2d0d6",
+          "#efeef0"
+        ]
+      },
+      "surface-muted-dark": {
+        "role": "neutral",
+        "displayName": "Surface Muted (dark)",
+        "canonical": "#24212b",
+        "theme": "dark",
+        "tonalRamp": [
+          "#0c0a0f",
+          "#27252d",
+          "#46434e",
+          "#676470",
+          "#8a8793",
+          "#afacb6",
+          "#d1d0d6",
+          "#efeef1"
+        ]
+      },
+      "text-dark": {
+        "role": "neutral",
+        "displayName": "Text (dark)",
+        "canonical": "#ece9f2",
+        "theme": "dark",
+        "tonalRamp": [
+          "#0c0b0d",
+          "#27252b",
+          "#46444a",
+          "#67656c",
+          "#8a888f",
+          "#afadb3",
+          "#d1d0d4",
+          "#efeef0"
+        ]
+      },
+      "text-muted-dark": {
+        "role": "neutral",
+        "displayName": "Text Muted (dark)",
+        "canonical": "#a8a2b4",
+        "theme": "dark",
+        "tonalRamp": [
+          "#0c0a10",
+          "#28242f",
+          "#474251",
+          "#686373",
+          "#8b8696",
+          "#b0abb9",
+          "#d2cfd8",
+          "#efeef1"
+        ]
+      },
+      "border-dark": {
+        "role": "neutral",
+        "displayName": "Border (dark)",
+        "canonical": "#2d2934",
+        "theme": "dark",
+        "tonalRamp": [
+          "#0c0a0f",
+          "#28252d",
+          "#47434e",
+          "#686470",
+          "#8b8793",
+          "#afacb6",
+          "#d2cfd6",
+          "#efeef1"
+        ]
+      },
+      "border-strong-dark": {
+        "role": "neutral",
+        "displayName": "Border Strong (dark)",
+        "canonical": "#757083",
+        "theme": "dark",
+        "tonalRamp": [
+          "#0c0a11",
+          "#282431",
+          "#464253",
+          "#686375",
+          "#8b8698",
+          "#afabbb",
+          "#d2cfd9",
+          "#efeef2"
+        ]
+      },
+      "ink-dark": {
+        "role": "primary",
+        "displayName": "Night Ink",
+        "canonical": "#ece9f2",
+        "theme": "dark",
+        "tonalRamp": [
+          "#0c0b0d",
+          "#27252b",
+          "#46444a",
+          "#67656c",
+          "#8a888f",
+          "#afadb3",
+          "#d1d0d4",
+          "#efeef0"
+        ]
+      },
+      "on-ink-dark": {
+        "role": "primary",
+        "displayName": "Night On Ink",
+        "canonical": "#17151c",
+        "theme": "dark",
+        "tonalRamp": [
+          "#0b0b0e",
+          "#27252b",
+          "#46444b",
+          "#67646d",
+          "#8a8890",
+          "#aeadb4",
+          "#d1d0d5",
+          "#eeeef0"
+        ]
+      },
+      "danger-dark": {
+        "role": "status",
+        "displayName": "Danger (dark)",
+        "canonical": "#dc2626",
+        "theme": "dark",
+        "tonalRamp": [
+          "#2b0000",
+          "#610000",
+          "#950000",
+          "#c40009",
+          "#ea473f",
+          "#ff8174",
+          "#ffb7ac",
+          "#ffe5e0"
+        ]
+      },
+      "danger-text-dark": {
+        "role": "status",
+        "displayName": "Danger Text (dark)",
+        "canonical": "#f28b82",
+        "theme": "dark",
+        "tonalRamp": [
+          "#200000",
+          "#4c0709",
+          "#792220",
+          "#a2443e",
+          "#c76b63",
+          "#e4968f",
+          "#f7c2bc",
+          "#ffe9e6"
+        ]
+      },
+      "success-dark": {
+        "role": "status",
+        "displayName": "Success (dark)",
+        "canonical": "#6fcf8f",
+        "theme": "dark",
+        "tonalRamp": [
+          "#001200",
+          "#003309",
+          "#005721",
+          "#037a40",
+          "#459e65",
+          "#7cc091",
+          "#b3debe",
+          "#e3f4e7"
+        ]
+      },
+      "task-ink-dark-text": {
+        "role": "task",
+        "displayName": "Dark Task Ink",
+        "canonical": "#1a1d21",
+        "theme": "both",
+        "tonalRamp": [
+          "#0a0b0d",
+          "#24272a",
+          "#42454a",
+          "#63666b",
+          "#86898e",
+          "#abaeb2",
+          "#cfd1d4",
+          "#eeeeef"
+        ]
+      },
+      "task-blue": {
+        "role": "task",
+        "displayName": "Task Blue",
+        "canonical": "#2563eb",
+        "theme": "both",
+        "tonalRamp": [
+          "#000038",
+          "#000f77",
+          "#0031b0",
+          "#1a57de",
+          "#4480ff",
+          "#76abff",
+          "#add1ff",
+          "#e0efff"
+        ]
+      },
+      "task-green": {
+        "role": "task",
+        "displayName": "Task Green",
+        "canonical": "#15803d",
+        "theme": "both",
+        "tonalRamp": [
+          "#001200",
+          "#003302",
+          "#005719",
+          "#097b38",
+          "#479e5e",
+          "#7dc18b",
+          "#b3debb",
+          "#e3f4e5"
+        ]
+      },
+      "task-red": {
+        "role": "task",
+        "displayName": "Task Red",
+        "canonical": "#dc2626",
+        "theme": "both",
+        "tonalRamp": [
+          "#2b0000",
+          "#610000",
+          "#950000",
+          "#c40009",
+          "#ea473f",
+          "#ff8174",
+          "#ffb7ac",
+          "#ffe5e0"
+        ]
+      },
+      "task-purple": {
+        "role": "task",
+        "displayName": "Task Purple",
+        "canonical": "#7c3aed",
+        "theme": "both",
+        "tonalRamp": [
+          "#130039",
+          "#330079",
+          "#5300b3",
+          "#732de2",
+          "#9460ff",
+          "#b493ff",
+          "#d4c2ff",
+          "#efe9ff"
+        ]
+      },
+      "task-amber": {
+        "role": "task",
+        "displayName": "Task Amber",
+        "canonical": "#a16207",
+        "theme": "both",
+        "tonalRamp": [
+          "#1b0400",
+          "#431800",
+          "#6c3400",
+          "#935500",
+          "#b77a36",
+          "#d5a36f",
+          "#eccaa9",
+          "#faecdf"
+        ]
+      },
+      "task-ocean": {
+        "role": "task",
+        "displayName": "Task Ocean",
+        "canonical": "#0369a1",
+        "theme": "both",
+        "tonalRamp": [
+          "#000c22",
+          "#002950",
+          "#00497c",
+          "#0b6ca4",
+          "#4590c7",
+          "#7bb5e2",
+          "#b1d6f4",
+          "#e2f1fd"
+        ]
+      },
+      "task-pink": {
+        "role": "task",
+        "displayName": "Task Pink",
+        "canonical": "#be185d",
+        "theme": "both",
+        "tonalRamp": [
+          "#270007",
+          "#5a001e",
+          "#8c0039",
+          "#b90e59",
+          "#df4c7c",
+          "#fa82a3",
+          "#ffb7ca",
+          "#ffe5eb"
+        ]
+      },
+      "task-magenta": {
+        "role": "task",
+        "displayName": "Task Magenta",
+        "canonical": "#c026d3",
+        "theme": "both",
+        "tonalRamp": [
+          "#210029",
+          "#4e005c",
+          "#7b008d",
+          "#a500b8",
+          "#c943da",
+          "#e67ef4",
+          "#f8b5ff",
+          "#ffe4ff"
+        ]
+      },
+      "task-charcoal": {
+        "role": "task",
+        "displayName": "Task Charcoal",
+        "canonical": "#1f2937",
+        "theme": "both",
+        "tonalRamp": [
+          "#070b12",
+          "#1f2732",
+          "#3b4654",
+          "#5b6777",
+          "#7f8a9a",
+          "#a5afbc",
+          "#cbd2da",
+          "#eceff2"
+        ]
+      },
+      "task-white": {
+        "role": "task",
+        "displayName": "Task White",
+        "canonical": "#ffffff",
+        "theme": "both",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#262626",
+          "#454545",
+          "#666666",
+          "#898989",
+          "#aeaeae",
+          "#d1d1d1",
+          "#eeeeee"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Stage Clock",
+        "purpose": "The running/selected clock on the stage only. 7rem under 1100px; clamp(4.5rem, 22vw, 6rem) on phones."
+      },
+      "headline": {
+        "displayName": "Stage Name",
+        "purpose": "Task name on the stage and the add/edit form title. 1.75rem on phones."
+      },
+      "page-title": {
+        "displayName": "Page Title",
+        "purpose": "Analytics, Calendar, Settings headings."
+      },
+      "title": {
+        "displayName": "Section Title",
+        "purpose": "Section and empty-state titles, analytics summary, calendar range."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Default copy."
+      },
+      "body-small": {
+        "displayName": "Body Small",
+        "purpose": "Buttons, stage status line, notes, table cells."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Sentence-case muted labels: rail group titles, hour labels, column heads. Never uppercase."
+      },
+      "figure": {
+        "displayName": "Figure",
+        "purpose": "Rail times, percents, metrics, table numbers."
+      },
+      "figure-large": {
+        "displayName": "Figure Large",
+        "purpose": "Summary totals; storage value up to 2.5rem."
+      }
+    },
+    "shadows": [
+      {
+        "name": "pop",
+        "value": "0 8px 24px rgba(23, 21, 28, 0.16)",
+        "theme": "light",
+        "purpose": "Floating overlays only: calendar popover, phone now-running strip."
+      },
+      {
+        "name": "pop-dark",
+        "value": "0 8px 24px rgba(0, 0, 0, 0.55)",
+        "theme": "dark",
+        "purpose": "Floating overlays only, dark theme."
+      },
+      {
+        "name": "task-edge-ring",
+        "value": "inset 0 0 0 1px var(--task-edge)",
+        "purpose": "Edge on every task-color fill so White stays visible on white. An edge, not elevation."
+      },
+      {
+        "name": "focus",
+        "value": "outline: 3px solid var(--focus); outline-offset: 2px",
+        "purpose": "Global focus ring; --focus is ink, or task ink on a flooded stage or the now-running strip."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease",
+        "value": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "purpose": "The only easing: ease-out for state changes."
+      },
+      {
+        "name": "control",
+        "value": "150ms",
+        "purpose": "Button background and color."
+      },
+      {
+        "name": "flood",
+        "value": "250ms",
+        "purpose": "Stage, stage status line and rail row filling with or draining the task color."
+      },
+      {
+        "name": "track",
+        "value": "300ms",
+        "purpose": "Goal-track fill width."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "transition: none",
+        "purpose": "All transitions removed under prefers-reduced-motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "medium",
+        "value": "1100px",
+        "purpose": "max-width: clock to 7rem, analytics rows fold."
+      },
+      {
+        "name": "phone",
+        "value": "899px",
+        "purpose": "max-width: rail dissolves into brand bar + bottom tab bar; now-running strip appears off Activities."
+      }
+    ],
+    "layout": {
+      "railWidth": "248px",
+      "tabbarHeight": "60px",
+      "gutter": "clamp(16px, 4vw, 48px)",
+      "stageMaxWidth": "980px",
+      "pageMaxWidth": "1080px"
+    },
+    "syncPairs": [
+      {
+        "token": "surface-muted-dark",
+        "mirror": "DARK_SURFACE_MUTED in js/storage.js"
+      },
+      {
+        "token": "ground / ground-dark",
+        "mirror": "GROUNDS in js/activities.js (near-ground band threshold 1.5)"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Ink-filled action; the only filled button outside the stage.",
+      "html": "<button class=\"ds-btn-primary\" type=\"button\">Add task</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 8px 14px; border: 1px solid var(--border-strong, #838094); border-radius: var(--radius, 6px); background: transparent; color: var(--text, #17151c); font-family: 'Barlow', system-ui, sans-serif; font-size: 0.9375rem; font-weight: 600; line-height: 1.2; cursor: pointer; transition: background-color 150ms cubic-bezier(0.22, 1, 0.36, 1), color 150ms cubic-bezier(0.22, 1, 0.36, 1); border-color: var(--ink, #17151c); background: var(--ink, #17151c); color: var(--on-ink, #ffffff); } .ds-btn-primary:hover { background: color-mix(in srgb, var(--ink, #17151c) 86%, var(--bg, #f5f4f7)); } .ds-btn-primary:focus-visible { outline: 3px solid var(--focus, #17151c); outline-offset: 2px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Default bordered button for secondary actions.",
+      "html": "<button class=\"ds-btn\" type=\"button\">Export</button>",
+      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 8px 14px; border: 1px solid var(--border-strong, #838094); border-radius: var(--radius, 6px); background: transparent; color: var(--text, #17151c); font-family: 'Barlow', system-ui, sans-serif; font-size: 0.9375rem; font-weight: 600; line-height: 1.2; cursor: pointer; transition: background-color 150ms cubic-bezier(0.22, 1, 0.36, 1), color 150ms cubic-bezier(0.22, 1, 0.36, 1); } .ds-btn:hover { background: var(--surface-muted, #efedf3); } .ds-btn:focus-visible { outline: 3px solid var(--focus, #17151c); outline-offset: 2px; }"
+    },
+    {
+      "name": "Quiet Button",
+      "kind": "button",
+      "refersTo": "button-quiet",
+      "description": "Borderless muted action (Edit, Delete, Cancel).",
+      "html": "<button class=\"ds-btn-quiet\" type=\"button\">Edit</button>",
+      "css": ".ds-btn-quiet { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 8px 14px; border: 1px solid var(--border-strong, #838094); border-radius: var(--radius, 6px); background: transparent; color: var(--text, #17151c); font-family: 'Barlow', system-ui, sans-serif; font-size: 0.9375rem; font-weight: 600; line-height: 1.2; cursor: pointer; transition: background-color 150ms cubic-bezier(0.22, 1, 0.36, 1), color 150ms cubic-bezier(0.22, 1, 0.36, 1); border-color: transparent; color: var(--text-muted, #59546a); } .ds-btn-quiet:hover { background: var(--surface-muted, #efedf3); color: var(--text, #17151c); } .ds-btn-quiet:focus-visible { outline: 3px solid var(--focus, #17151c); outline-offset: 2px; }"
+    },
+    {
+      "name": "Stage Toggle",
+      "kind": "button",
+      "refersTo": "button-stage",
+      "description": "The one big start/pause control: task-color fill idle, inverted to task ink while running.",
+      "html": "<div class=\"ds-stage-pair\"><button class=\"ds-btn-stage\" type=\"button\"><svg viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" aria-hidden=\"true\" fill=\"currentColor\"><path d=\"M8 5.5v13l10.5-6.5z\"/></svg> Start</button><button class=\"ds-btn-stage is-running\" type=\"button\"><svg viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" aria-hidden=\"true\" fill=\"currentColor\"><path d=\"M6.5 5h4v14h-4zM13.5 5h4v14h-4z\"/></svg> Pause</button></div>",
+      "css": ".ds-stage-pair { display: flex; gap: 12px; flex-wrap: wrap; padding: 16px; background: #f5f4f7; } .ds-stage-pair:has(.is-running) { background: linear-gradient(90deg, #f5f4f7 50%, #7c3aed 50%); } .ds-btn-stage { --task-color: #7c3aed; --task-ink: #ffffff; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-width: 10rem; min-height: 56px; padding: 0 28px; border: 0; border-radius: 6px; background: var(--task-color); color: var(--task-ink); font-family: 'Barlow', system-ui, sans-serif; font-size: 1.125rem; font-weight: 600; cursor: pointer; transition: background-color 150ms cubic-bezier(0.22, 1, 0.36, 1); } .ds-btn-stage:hover { background: color-mix(in srgb, var(--task-color) 86%, #17151c); } .ds-btn-stage.is-running { background: var(--task-ink); color: var(--task-color); } .ds-btn-stage.is-running:hover { background: color-mix(in srgb, var(--task-ink) 88%, var(--task-color)); } .ds-btn-stage:focus-visible { outline: 3px solid #17151c; outline-offset: 2px; } .ds-btn-stage.is-running:focus-visible { outline-color: #ffffff; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input-text",
+      "description": "Surface-filled field with a 3:1 border and the global ink focus ring.",
+      "html": "<label class=\"ds-field\"><span>Task name</span><input class=\"ds-input\" type=\"text\" placeholder=\"e.g. Guitar\"></label>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 6px; font-family: 'Barlow', system-ui, sans-serif; font-size: 0.9375rem; font-weight: 600; color: var(--text, #17151c); } .ds-input { min-height: 42px; padding: 8px 12px; border: 1px solid var(--border-strong, #838094); border-radius: 6px; background: var(--surface, #ffffff); color: var(--text, #17151c); font: 400 16px 'Barlow', system-ui, sans-serif; } .ds-input::placeholder { color: var(--placeholder, #6a6578); } .ds-input:focus-visible { outline: 3px solid var(--focus, #17151c); outline-offset: 2px; }"
+    },
+    {
+      "name": "Day Chips",
+      "kind": "chip",
+      "refersTo": "chip-day",
+      "description": "Weekday checkboxes and Day/Week/Month radios; selected chips fill with ink.",
+      "html": "<div class=\"ds-chips\"><span class=\"ds-chip is-on\">Mon</span><span class=\"ds-chip is-on\">Tue</span><span class=\"ds-chip\">Wed</span><span class=\"ds-chip is-on\">Thu</span><span class=\"ds-chip\">Fri</span><span class=\"ds-chip\">Sat</span><span class=\"ds-chip\">Sun</span></div>",
+      "css": ".ds-chips { display: flex; gap: 4px; max-width: 26rem; } .ds-chip { display: grid; flex: 1; place-items: center; min-height: 38px; border: 1px solid var(--border-strong, #838094); border-radius: 6px; background: var(--surface, #ffffff); color: var(--text-muted, #59546a); font: 600 0.875rem 'Barlow', system-ui, sans-serif; cursor: pointer; } .ds-chip:hover { background: var(--surface-muted, #efedf3); } .ds-chip.is-on { border-color: var(--ink, #17151c); background: var(--ink, #17151c); color: var(--on-ink, #ffffff); }"
+    },
+    {
+      "name": "Rail Navigation",
+      "kind": "nav",
+      "refersTo": "nav-item",
+      "description": "Vertical nav in the rail; current and hover fill rail-raised. Becomes a bottom tab bar on phones.",
+      "html": "<nav class=\"ds-rail-nav\"><a href=\"#\" aria-current=\"page\">Activities</a><a href=\"#\">Analytics</a><a href=\"#\">Calendar</a><a href=\"#\">Settings</a></nav>",
+      "css": ".ds-rail-nav { display: flex; flex-direction: column; gap: 2px; width: 224px; padding: 12px; background: var(--rail, #ebe9f0); font-family: 'Barlow', system-ui, sans-serif; } .ds-rail-nav a { padding: 7px 8px; border-radius: 6px; color: var(--text-muted, #59546a); font-weight: 500; text-decoration: none; } .ds-rail-nav a:hover { background: var(--rail-raised, #dcd9e3); color: var(--text, #17151c); } .ds-rail-nav a[aria-current='page'] { background: var(--rail-raised, #dcd9e3); color: var(--text, #17151c); font-weight: 600; } .ds-rail-nav a:focus-visible { outline: 3px solid var(--focus, #17151c); outline-offset: 2px; }"
+    },
+    {
+      "name": "Rail Task Rows",
+      "kind": "custom",
+      "refersTo": "rail-row",
+      "description": "Task rows in the rail; the running row floods with its task color.",
+      "html": "<ul class=\"ds-rail-list\"><li class=\"ds-row\" style=\"--task-color:#2563eb\"><a href=\"#\"><span class=\"ds-sq\"></span><span class=\"ds-name\">Reading</span><span class=\"ds-time\">18m</span></a><button type=\"button\" aria-label=\"Start Reading\"><svg viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" aria-hidden=\"true\" fill=\"currentColor\"><path d=\"M8 5.5v13l10.5-6.5z\"/></svg></button></li><li class=\"ds-row is-running\" style=\"--task-color:#7c3aed;--task-ink:#ffffff\"><a href=\"#\"><span class=\"ds-sq\"></span><span class=\"ds-name\">Guitar</span><span class=\"ds-time\">0:46:56 <svg viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" aria-hidden=\"true\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.25\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 12.5l4.5 4.5L19 7.5\"/></svg></span></a><button type=\"button\" aria-label=\"Pause Guitar\"><svg viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" aria-hidden=\"true\" fill=\"currentColor\"><path d=\"M6.5 5h4v14h-4zM13.5 5h4v14h-4z\"/></svg></button></li><li class=\"ds-row\" style=\"--task-color:#be185d\"><a href=\"#\"><span class=\"ds-sq\"></span><span class=\"ds-name\">Piano</span><span class=\"ds-time\">40m <small>wk</small></span></a><button type=\"button\" aria-label=\"Start Piano\"><svg viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" aria-hidden=\"true\" fill=\"currentColor\"><path d=\"M8 5.5v13l10.5-6.5z\"/></svg></button></li></ul>",
+      "css": ".ds-rail-list { display: flex; flex-direction: column; gap: 2px; width: 224px; margin: 0; padding: 12px; list-style: none; background: var(--rail, #ebe9f0); font-family: 'Barlow', system-ui, sans-serif; } .ds-row { display: flex; align-items: center; gap: 2px; border-radius: 6px; color: var(--text, #17151c); transition: background-color 250ms cubic-bezier(0.22, 1, 0.36, 1), color 250ms cubic-bezier(0.22, 1, 0.36, 1); } .ds-row a { display: flex; flex: 1; align-items: center; gap: 8px; min-height: 36px; padding: 6px 8px; border-radius: 6px; color: inherit; text-decoration: none; } .ds-sq { width: 10px; height: 10px; border-radius: 2px; background: var(--task-color); } .ds-name { flex: 1; line-height: 1.25; } .ds-time { display: inline-flex; align-items: center; gap: 4px; font-family: 'Barlow Condensed', 'Barlow', sans-serif; font-weight: 600; font-variant-numeric: tabular-nums; } .ds-time small { font-family: 'Barlow', sans-serif; font-size: 0.75rem; font-weight: 500; } .ds-row button { display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: var(--text-muted, #59546a); font-size: 0.875rem; cursor: pointer; } .ds-row button:hover { color: var(--text, #17151c); } .ds-row.is-running { background: var(--task-color); color: var(--task-ink); } .ds-row.is-running .ds-sq { background: var(--task-ink); } .ds-row.is-running button { color: inherit; } .ds-row.is-running a:hover, .ds-row.is-running button:hover { background: color-mix(in srgb, var(--task-ink) 16%, transparent); } .ds-row a:focus-visible, .ds-row button:focus-visible { outline: 3px solid var(--focus, #17151c); outline-offset: 2px; } .ds-row.is-running a:focus-visible, .ds-row.is-running button:focus-visible { outline-color: var(--task-ink); }"
+    },
+    {
+      "name": "Goal Track",
+      "kind": "custom",
+      "refersTo": "goal-track",
+      "description": "Ten-segment progress bar: nine 2px ticks in the color of the surface beneath, fill capped at 100%.",
+      "html": "<div class=\"ds-track-demo\"><div class=\"ds-track\" style=\"--task-color:#15803d\"><div class=\"ds-fill\" style=\"width:40%\"></div><div class=\"ds-ticks\" aria-hidden=\"true\"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div><div class=\"ds-stage-track\"><div class=\"ds-track ds-track-stage\"><div class=\"ds-fill\" style=\"width:70%\"></div><div class=\"ds-ticks\" aria-hidden=\"true\"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div></div></div>",
+      "css": ".ds-track-demo { display: flex; flex-direction: column; gap: 16px; width: 360px; } .ds-track { position: relative; height: 8px; overflow: hidden; border-radius: 2px; background: var(--track-color, var(--surface-muted, #efedf3)); } .ds-fill { height: 100%; background: var(--task-color, #17151c); transition: width 300ms cubic-bezier(0.22, 1, 0.36, 1); } .ds-ticks { position: absolute; inset: 0; display: flex; justify-content: space-evenly; pointer-events: none; } .ds-ticks i { width: 2px; background: var(--tick-color, var(--bg, #f5f4f7)); } .ds-stage-track { padding: 16px; background: #7c3aed; } .ds-track-stage { height: 14px; --track-color: color-mix(in srgb, #ffffff 30%, #7c3aed); --tick-color: #7c3aed; --task-color: #ffffff; }"
+    },
+    {
+      "name": "Stage Clock",
+      "kind": "custom",
+      "refersTo": "display",
+      "description": "The flooded stage at small scale: status line, name, condensed tabular clock, track, toggle. White and Charcoal tasks add the ink band.",
+      "html": "<section class=\"ds-stage\"><div class=\"ds-meta\"><span>Today · running since 9:37 AM</span><span>Tuesday, November 3</span></div><h2>Guitar</h2><p class=\"ds-sched\">Weekdays 20 min</p><div class=\"ds-clock\">0:46:56</div><div class=\"ds-track ds-track-stage\"><div class=\"ds-fill\" style=\"width:100%\"></div><div class=\"ds-ticks\" aria-hidden=\"true\"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div><p class=\"ds-goal\"><span>Goal: 20 min</span><strong><svg viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" aria-hidden=\"true\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.25\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 12.5l4.5 4.5L19 7.5\"/></svg> Goal met (+26m)</strong></p></section>",
+      "css": ".ds-stage { --task-color: #7c3aed; --task-ink: #ffffff; width: 520px; padding: 0 24px 24px; background: var(--task-color); color: var(--task-ink); font-family: 'Barlow', system-ui, sans-serif; transition: background-color 250ms cubic-bezier(0.22, 1, 0.36, 1); } .ds-meta { display: flex; justify-content: space-between; margin: 0 -24px 24px; padding: 12px 24px; font-size: 0.9375rem; font-weight: 500; } .ds-stage h2 { margin: 0; font-size: 2.25rem; font-weight: 600; line-height: 1.1; letter-spacing: -0.01em; } .ds-sched { margin: 6px 0 0; font-size: 1.0625rem; } .ds-clock { margin: 16px 0 14px -0.04em; font-family: 'Barlow Condensed', 'Barlow', sans-serif; font-size: 6rem; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 0.86; letter-spacing: -0.01em; } .ds-stage .ds-track { position: relative; height: 14px; overflow: hidden; border-radius: 2px; background: color-mix(in srgb, var(--task-ink) 30%, var(--task-color)); } .ds-stage .ds-fill { height: 100%; background: var(--task-ink); } .ds-stage .ds-ticks { position: absolute; inset: 0; display: flex; justify-content: space-evenly; } .ds-stage .ds-ticks i { width: 2px; background: var(--task-color); } .ds-goal { display: flex; justify-content: space-between; margin: 10px 0 0; font-size: 1.0625rem; } .ds-goal strong { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Color Stage",
+    "overview": "One timer runs at a time, so the screen wears one color at a time. The app is a quiet lilac-grey room with an ink rail down its left side; nothing on it carries a hue of its own. When a task starts, the whole content column (the stage) and that task's row in the rail flood with the task's color, and every word and control on the stage switches to the task's ink. Pause, and the stage drains back to the ground. The color is information, never decoration: it says \"this is running\" from across the room.\n\nDensity is low on the stage and moderate everywhere else. The stage gives the running clock almost all of its height: a status line on top, then name, schedule, a condensed clock at 9rem, a full-width ticked goal track and one large control. The other pages (Analytics, Calendar, Settings) read in rows and tracks divided by hairline rules, not in boxed tiles. The system is flat: depth comes from the rail's slightly darker tone and from 1px rules, and the only shadow belongs to things that float over the page.\n\nExplicitly rejected: the category default of a grid of equal white cards with a blue accent and KPI tiles.",
+    "keyCharacteristics": [
+      "No brand accent. Ink is the action color; the ten task colors are the only hues anywhere.",
+      "The running task floods the stage and its rail row, on every page where the rail is visible.",
+      "Barlow for words, Barlow Condensed tabular numerals for every clock and figure.",
+      "Squared corners (6px), hairline rules, no card shadows.",
+      "Goal progress is always a ten-segment ticked track.",
+      "Light and Dark themes share every rule; only the token values change."
+    ],
+    "rules": [
+      {
+        "name": "The One Hue at a Time Rule",
+        "body": "There is no global accent. The only saturated color on a screen is the running task's, plus small task squares that label rows. Never introduce a brand blue, a link color or a decorative tint.",
+        "section": "colors"
+      },
+      {
+        "name": "The Near-Ground Band Rule",
+        "body": "When the running color barely differs from the ground (contrast against the ground below 1.5: White on light, Charcoal on dark), the stage's status line becomes a full-width band in the task's ink with the task color as text, weight 600. This is the running mark that does not depend on hue. For every other color the status line stays unbanded; the flood itself is the signal. The ground hexes are duplicated as `GROUNDS` in `js/activities.js` and must stay in sync with `ground` / `ground-dark`.",
+        "section": "colors"
+      },
+      {
+        "name": "The Full-Ink Rule",
+        "body": "On a flooded stage, secondary text stays full task ink and steps down by size, not by opacity, because the palette only just reaches 4.5:1.",
+        "section": "colors"
+      },
+      {
+        "name": "The Condensed Figures Rule",
+        "body": "Every clock, duration, percent and count is set in Barlow Condensed with tabular numerals, so ticking digits never shift. Words are never set condensed.",
+        "section": "typography"
+      },
+      {
+        "name": "The Sentence Case Rule",
+        "body": "Labels are small and muted, never uppercase and never letter-spaced. There is no eyebrow or kicker type in this system.",
+        "section": "typography"
+      },
+      {
+        "name": "The Rules-Not-Boxes Rule",
+        "body": "Sections are divided by a top hairline rule with 20px above the content, never boxed in a card. If it doesn't float over other content, it has no shadow.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** let ink be the only action color: primary buttons, selected chips, focus rings, selection.",
+      "**Do** flood the stage and the running task's rail row with the task color, and switch everything on it to task ink.",
+      "**Do** band the stage status line in task ink when the running color's contrast with the ground is under 1.5.",
+      "**Do** set every number in Barlow Condensed with tabular numerals.",
+      "**Do** show goal progress as the ten-segment ticked track, capped at 100%.",
+      "**Do** keep corners at 6px (4px for calendar blocks, 2–3px for small marks).",
+      "**Do** divide sections with 1px hairline rules.",
+      "**Do** keep motion to state changes: 150–250ms, ease-out, off under reduced motion.",
+      "**Do** keep `ground-dark` / `ground` in sync with `GROUNDS` in `js/activities.js`, and `surface-muted-dark` with `DARK_SURFACE_MUTED` in `js/storage.js`."
+    ],
+    "donts": [
+      "**Don't** add a global accent hue, brand color or colored links; the task palette is the only source of hue.",
+      "**Don't** put shadows on cards, panels, rows or buttons; the pop shadow is for floating overlays only.",
+      "**Don't** build grids of equal white cards or KPI tiles; read data in rows and tracks.",
+      "**Don't** use pill shapes for nav, buttons or chips.",
+      "**Don't** use uppercase or letter-spaced micro-labels, eyebrows or kickers.",
+      "**Don't** use unicode glyphs or emoji as icons; use the authored SVG set.",
+      "**Don't** fade secondary text on a flooded stage; step it down by size.",
+      "**Don't** put a form on a flooded stage."
+    ]
+  }
+}

@@ -27,7 +27,7 @@
   const DEFAULT_PERIOD_GOAL_MINUTES = 300
   const DARK_TEXT = '#1a1d21'
   // The dark theme's --surface-muted in css/styles.css.
-  const DARK_SURFACE_MUTED = '#23272d'
+  const DARK_SURFACE_MUTED = '#24212b'
   /*
    * Major browsers let each site keep about 5 million characters of keys and
    * values in localStorage, so usage is measured in characters and shown as

@@ -1,85 +1,122 @@
 /* Time Tracker: shared styles for every page. */
 
+/* Barlow and Barlow Condensed (SIL Open Font License), served from this site so no request leaves it. */
+@font-face {
+  font-family: 'Barlow';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/barlow-latin-400-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Barlow';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('../fonts/barlow-latin-500-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Barlow';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../fonts/barlow-latin-600-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../fonts/barlow-condensed-latin-600-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../fonts/barlow-condensed-latin-700-normal.woff2') format('woff2');
+}
+
 :root {
-  --radius: 12px;
-  --radius-sm: 8px;
-  --font: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-  --gutter: 16px;
-  --max: 1080px;
+  --radius: 6px;
+  --radius-sm: 4px;
+  --font: 'Barlow', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-figures: 'Barlow Condensed', 'Barlow', system-ui, sans-serif;
+  --gutter: clamp(16px, 4vw, 48px);
+  --rail-width: 248px;
+  --tabbar-height: 60px;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /*
  * Colors. js/theme.js sets data-theme on <html> before the first paint. The
  * selectors aren't tied to :root, so any element can carry data-theme and get
  * that theme's tokens, which is how the Settings previews show both themes.
- * `*-text` tokens are for text on the page; their siblings are for fills and
- * borders, because dark mode needs light text but still-dark fills.
+ * There is no brand accent: ink is the action color, and the task colors are
+ * the only hues on the page.
  */
 :root,
 [data-theme='light'] {
   color-scheme: light;
-  --bg: #f6f7f9;
+  --bg: #f5f4f7;
+  --rail: #ebe9f0;
+  --rail-raised: #dcd9e3;
   --surface: #ffffff;
-  --surface-muted: #eef0f3;
-  --text: #1a1d21;
-  --text-muted: #555e68;
-  --placeholder: #6b7280;
-  --border: #d9dee3;
-  /* ≥ 3:1 against white, so input and button edges stay perceivable (WCAG 1.4.11). */
-  --border-strong: #858f99;
-  --grid-line: #e6e9ed;
-  --accent: #2563eb;
-  --accent-strong: #1d4ed8;
-  --accent-soft: #eaf1fe;
-  --accent-text: #1d4ed8;
-  --focus: #1d4ed8;
+  --surface-muted: #efedf3;
+  --text: #17151c;
+  --text-muted: #59546a;
+  --placeholder: #6a6578;
+  --border: #dcd9e2;
+  /* ≥ 3:1 against white and the ground, so input and button edges stay perceivable (WCAG 1.4.11). */
+  --border-strong: #838094;
+  --grid-line: #e4e1ea;
+  --ink: #17151c;
+  --on-ink: #ffffff;
+  --focus: #17151c;
   --danger: #b91c1c;
   --danger-strong: #991b1b;
   --danger-soft: #fdf1f1;
   --danger-border: #f0bcbc;
   --danger-text: #b91c1c;
   --success: #166534;
-  --success-soft: #e6f4ea;
-  --warning-bg: #fff8e6;
-  --warning-border: #e3ad3f;
+  --warning-bg: #fff6dc;
+  --warning-border: #d9a43a;
   --warning-text: #5f3f00;
-  --now: #d93025;
-  --today-bg: #f7faff;
-  --shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 1px 3px rgba(16, 24, 40, 0.07);
-  --shadow-pop: 0 8px 24px rgba(16, 24, 40, 0.16);
+  --today-bg: #eeecf3;
+  --shadow-pop: 0 8px 24px rgba(23, 21, 28, 0.16);
 }
 
 /* Text pairs are ≥ 4.5:1 and borders ≥ 3:1, as in light. `--surface-muted` must match DARK_SURFACE_MUTED in js/storage.js. */
 [data-theme='dark'] {
   color-scheme: dark;
-  --bg: #0f1114;
-  --surface: #181b1f;
-  --surface-muted: #23272d;
-  --text: #e6e8eb;
-  --text-muted: #a0a8b1;
-  --placeholder: #8b949e;
-  --border: #2e333a;
-  --border-strong: #6b747e;
-  --grid-line: #262a30;
-  /* The accent stays dark enough for white text on buttons; links use the lighter --accent-text. */
-  --accent: #2563eb;
-  --accent-strong: #1d4ed8;
-  --accent-soft: #1b2a4a;
-  --accent-text: #8ab4f8;
-  --focus: #8ab4f8;
+  --bg: #121016;
+  --rail: #19171e;
+  --rail-raised: #2a2631;
+  --surface: #1d1a23;
+  --surface-muted: #24212b;
+  --text: #ece9f2;
+  --text-muted: #a8a2b4;
+  --placeholder: #938d9f;
+  --border: #2d2934;
+  --border-strong: #757083;
+  --grid-line: #26232c;
+  --ink: #ece9f2;
+  --on-ink: #17151c;
+  --focus: #ece9f2;
   --danger: #dc2626;
   --danger-strong: #b91c1c;
   --danger-soft: #2c1517;
   --danger-border: #6b2a2a;
   --danger-text: #f28b82;
   --success: #6fcf8f;
-  --success-soft: #12291b;
   --warning-bg: #2b2208;
   --warning-border: #8a6512;
   --warning-text: #f5d58a;
-  --now: #ff6b5e;
-  --today-bg: #16202e;
-  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.5);
+  --today-bg: #1a1820;
   --shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.55);
 }
 
@@ -98,22 +135,17 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  scrollbar-color: var(--border-strong) transparent;
+  caret-color: var(--ink);
 }
 
 body {
   margin: 0;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
   font-family: var(--font);
   font-size: 16px;
   line-height: 1.5;
   color: var(--text);
   background: var(--bg);
-}
-
-main {
-  flex: 1;
 }
 
 h1,
@@ -124,14 +156,24 @@ p {
 }
 
 a {
-  color: var(--accent-text);
-  text-underline-offset: 2px;
+  color: var(--text);
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 3px;
+}
+
+a:hover {
+  text-decoration-color: currentColor;
 }
 
 button,
 input {
   font: inherit;
   color: inherit;
+}
+
+::selection {
+  background: var(--ink);
+  color: var(--on-ink);
 }
 
 :focus-visible {
@@ -158,68 +200,89 @@ input {
   left: 8px;
   z-index: 100;
   padding: 8px 12px;
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-  color: var(--accent-text);
+  border-radius: var(--radius);
+  background: var(--ink);
+  color: var(--on-ink);
   font-weight: 600;
-  box-shadow: var(--shadow);
 }
 
 .skip-link:focus {
   top: 8px;
 }
 
-/* ---- Header, banner, footer -------------------------------------------- */
-
-.site-header {
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
+.icon {
+  flex: none;
+  width: 1em;
+  height: 1em;
+  fill: currentColor;
 }
 
-.header-inner {
+/* Line icons; play and pause are solid shapes. */
+.icon-plus,
+.icon-check,
+.icon-chevron-left,
+.icon-chevron-right {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ---- Shell: rail + content ----------------------------------------------- */
+
+.shell {
+  display: grid;
+  grid-template-columns: var(--rail-width) minmax(0, 1fr);
+  grid-template-rows: 1fr auto;
+  min-height: 100vh;
+}
+
+.rail {
+  position: sticky;
+  top: 0;
+  grid-row: 1 / -1;
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px 16px;
-  max-width: var(--max);
-  margin: 0 auto;
-  padding: 10px var(--gutter);
+  flex-direction: column;
+  height: 100vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 12px;
+  border-right: 1px solid var(--border);
+  background: var(--rail);
+}
+
+.rail-head {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 0 4px;
 }
 
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  padding: 0 8px;
   color: var(--text);
-  font-weight: 700;
+  font-size: 1.125rem;
+  font-weight: 600;
   text-decoration: none;
 }
 
+/* A small stage: an ink square with the rail showing through its lower half. */
 .brand-mark {
-  position: relative;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: var(--accent);
-}
-
-.brand-mark::after {
-  content: '';
-  position: absolute;
-  top: 4px;
-  left: 9px;
-  width: 2px;
-  height: 7px;
-  border-radius: 1px;
-  background: #fff;
-  transform-origin: bottom center;
-  transform: rotate(35deg);
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  background: linear-gradient(var(--ink) 55%, transparent 55%);
+  box-shadow: inset 0 0 0 2px var(--ink);
 }
 
 .nav-list {
   display: flex;
-  gap: 4px;
+  flex-direction: column;
+  gap: 2px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -227,44 +290,43 @@ input {
 
 .nav-list a {
   display: block;
-  padding: 8px 12px;
-  border-radius: 999px;
+  padding: 7px 8px;
+  border-radius: var(--radius);
   color: var(--text-muted);
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-weight: 500;
   text-decoration: none;
 }
 
 .nav-list a:hover {
-  background: var(--surface-muted);
+  background: var(--rail-raised);
   color: var(--text);
 }
 
 .nav-list a[aria-current='page'] {
-  background: var(--accent-soft);
-  color: var(--accent-text);
+  background: var(--rail-raised);
+  color: var(--text);
+  font-weight: 600;
 }
 
-.banner {
-  width: calc(100% - 2 * var(--gutter));
-  max-width: calc(var(--max) - 2 * var(--gutter));
-  margin: 12px auto 0;
-  padding: 10px 14px;
-  border: 1px solid var(--warning-border);
-  border-radius: var(--radius-sm);
-  background: var(--warning-bg);
-  color: var(--warning-text);
-  font-size: 0.925rem;
+.main-col {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
 .site-footer {
+  grid-column: 2;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 16px max(var(--gutter), calc((100% - var(--max)) / 2 + var(--gutter)));
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  padding: 14px var(--gutter) 20px;
   border-top: 1px solid var(--border);
-  background: var(--surface);
+}
+
+.site-footer > .inline-confirm,
+.site-footer > .data-status {
+  flex-basis: 100%;
 }
 
 .footer-note,
@@ -277,20 +339,199 @@ input {
   display: none;
 }
 
-/* ---- Layout -------------------------------------------------------------- */
+.banner {
+  margin: 16px var(--gutter) 0;
+  padding: 10px 14px;
+  border: 1px solid var(--warning-border);
+  border-radius: var(--radius);
+  background: var(--warning-bg);
+  color: var(--warning-text);
+  font-size: 0.9375rem;
+}
+
+/* ---- Rail task list ------------------------------------------------------ */
+
+.rail-tasks {
+  flex: 1;
+  padding: 8px 0 24px;
+}
+
+.rail-group-title {
+  padding: 16px 8px 6px;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.rail-note {
+  padding: 0 8px 6px;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.rail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rail-task {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  border-radius: var(--radius);
+  transition: background-color 250ms var(--ease), color 250ms var(--ease);
+}
+
+.rail-task-link {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 36px;
+  padding: 6px 8px;
+  border-radius: var(--radius);
+  color: inherit;
+  text-decoration: none;
+}
+
+.rail-task-link:hover,
+.rail-play:hover,
+.rail-add:hover {
+  background: var(--rail-raised);
+}
+
+.rail-task.is-selected:not(.is-running) {
+  background: var(--rail-raised);
+  font-weight: 600;
+}
+
+.rail-task.is-off:not(.is-running) .rail-task-link {
+  color: var(--text-muted);
+}
+
+.task-square {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--task-color);
+  box-shadow: inset 0 0 0 1px var(--task-edge);
+}
+
+/* Long names wrap rather than truncate, so a name is never cut short. */
+.rail-task-name {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.rail-task-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-muted);
+  font-family: var(--font-figures);
+  font-size: 1rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.rail-task-period {
+  font-family: var(--font);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.rail-task-met {
+  display: inline-flex;
+  font-size: 0.875rem;
+}
+
+.rail-play {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.rail-play:hover {
+  color: var(--text);
+}
+
+/* The running task wears its color in the rail on every page. */
+.rail-task.is-running {
+  background: var(--task-color);
+  box-shadow: inset 0 0 0 1px var(--task-edge);
+  color: var(--task-ink);
+}
+
+.rail-task.is-running .task-square {
+  background: var(--task-ink);
+  box-shadow: none;
+}
+
+.rail-task.is-running .rail-task-time,
+.rail-task.is-running .rail-play {
+  color: inherit;
+}
+
+.rail-task.is-running .rail-task-link:hover,
+.rail-task.is-running .rail-play:hover {
+  background: color-mix(in srgb, var(--task-ink) 16%, transparent);
+}
+
+.rail-add {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  margin-top: 12px;
+  padding: 6px 8px;
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.rail-add[aria-current='true'] {
+  background: var(--rail-raised);
+  color: var(--text);
+}
+
+/* Only shown on phones, where the rail's task list is out of view on most pages. */
+.now-chip {
+  display: none;
+}
+
+/* ---- Pages --------------------------------------------------------------- */
 
 .page {
   display: flex;
+  flex: 1;
   flex-direction: column;
-  gap: 24px;
+  gap: 32px;
   width: 100%;
-  max-width: var(--max);
-  margin: 0 auto;
-  padding: 24px var(--gutter) 40px;
+  max-width: 1080px;
+  padding: 36px var(--gutter) 48px;
 }
 
 .page-wide {
-  max-width: 1280px;
+  max-width: none;
 }
 
 .page-head {
@@ -302,8 +543,10 @@ input {
 }
 
 .page-title {
-  font-size: 1.6rem;
-  line-height: 1.2;
+  font-size: 1.875rem;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
 }
 
 .page-lede {
@@ -312,40 +555,37 @@ input {
 
 .section-title {
   margin-bottom: 12px;
-  font-size: 1.05rem;
+  font-size: 1.1875rem;
+  font-weight: 600;
 }
 
 .section-note {
-  margin: -4px 0 12px;
+  max-width: 68ch;
+  margin: -6px 0 14px;
   color: var(--text-muted);
-  font-size: 0.925rem;
+  font-size: 0.9375rem;
 }
 
+/* Sections are divided by a rule, not boxed. */
 .panel {
-  padding: 16px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--surface);
-  box-shadow: var(--shadow);
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
 }
 
 .empty-state {
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 6px;
-  padding: 28px 20px;
-  border: 1px dashed var(--border-strong);
-  border-radius: var(--radius);
-  background: var(--surface);
+  max-width: 60ch;
+  padding: 20px 0;
+  border-top: 1px solid var(--border);
   color: var(--text-muted);
-  text-align: center;
 }
 
 .empty-title {
   color: var(--text);
-  font-size: 1.05rem;
-  font-weight: 700;
+  font-size: 1.1875rem;
+  font-weight: 600;
 }
 
 /* ---- Buttons ------------------------------------------------------------- */
@@ -354,17 +594,18 @@ input {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   min-height: 40px;
   padding: 8px 14px;
   border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
+  border-radius: var(--radius);
+  background: transparent;
   color: var(--text);
-  font-size: 0.95rem;
+  font-size: 0.9375rem;
   font-weight: 600;
   line-height: 1.2;
   cursor: pointer;
+  transition: background-color 150ms var(--ease), color 150ms var(--ease);
 }
 
 .btn:hover {
@@ -372,14 +613,13 @@ input {
 }
 
 .btn-primary {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: #fff;
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--on-ink);
 }
 
 .btn-primary:hover {
-  border-color: var(--accent-strong);
-  background: var(--accent-strong);
+  background: color-mix(in srgb, var(--ink) 86%, var(--bg));
 }
 
 .btn-quiet {
@@ -409,30 +649,6 @@ input {
   background: var(--danger-strong);
 }
 
-/* Filled with the task color when idle; outlined while running, so the two states differ in more than the label. */
-.btn-toggle {
-  min-width: 100px;
-  border: 2px solid var(--task-edge);
-  background: var(--task-color);
-  color: var(--task-ink);
-}
-
-.btn-toggle:hover {
-  background: var(--task-color);
-  filter: brightness(0.9);
-}
-
-.btn-toggle.is-running,
-.btn-toggle.is-running:hover {
-  background: var(--surface);
-  color: var(--task-edge);
-  filter: none;
-}
-
-.btn-toggle.is-running:hover {
-  background: var(--surface-muted);
-}
-
 .btn-icon {
   width: 40px;
   padding: 0;
@@ -441,7 +657,7 @@ input {
 .btn-small {
   min-height: 32px;
   padding: 4px 10px;
-  font-size: 0.85rem;
+  font-size: 0.875rem;
 }
 
 .btn-row {
@@ -455,8 +671,8 @@ input {
 
 .form-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 14px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 22px;
 }
 
 .field {
@@ -472,12 +688,12 @@ input {
 .field label,
 .field legend {
   padding: 0;
-  font-size: 0.9rem;
+  font-size: 0.9375rem;
   font-weight: 600;
 }
 
 .field legend {
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .field input[type='text'],
@@ -486,8 +702,13 @@ input {
   min-height: 42px;
   padding: 8px 12px;
   border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   background: var(--surface);
+  font-variant-numeric: tabular-nums;
+}
+
+.field input[type='text'] {
+  max-width: 32rem;
 }
 
 .field input::placeholder {
@@ -501,30 +722,11 @@ input {
 
 .field-error {
   color: var(--danger-text);
-  font-size: 0.85rem;
+  font-size: 0.875rem;
 }
 
 .field-error:empty {
   display: none;
-}
-
-.field-submit .btn {
-  width: 100%;
-}
-
-@media (min-width: 640px) {
-  .form-grid {
-    grid-template-columns: minmax(0, 1fr) 12rem;
-  }
-
-  .field-name,
-  .field-schedule {
-    grid-column: 1 / -1;
-  }
-
-  .field-submit {
-    align-self: end;
-  }
 }
 
 /* ---- Schedule editor ----------------------------------------------------- */
@@ -536,7 +738,7 @@ input {
   gap: 8px 12px;
 }
 
-/* Chips shrink to fit a narrow card, but never grow into wide pills on a wide form. */
+/* Chips shrink to fit a narrow column, but never grow into wide bars on a wide form. */
 .day-picker {
   display: flex;
   flex: 1 1 18rem;
@@ -567,14 +769,14 @@ input {
   display: grid;
   flex: 1;
   place-items: center;
-  min-height: 36px;
+  min-height: 38px;
   padding: 0 2px;
   overflow: hidden;
   border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   background: var(--surface);
   color: var(--text-muted);
-  font-size: 0.8rem;
+  font-size: 0.875rem;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -584,9 +786,9 @@ input {
 }
 
 .day-chip input:checked + .day-chip-text {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: #fff;
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--on-ink);
 }
 
 .day-chip input:focus-visible + .day-chip-text {
@@ -597,31 +799,30 @@ input {
 /* "Goal per" Day / Week / Month: the same chips as the day picker, used as radios. */
 .period-row {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 12px;
-  margin-bottom: 6px;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
 }
 
 .period-label {
   color: var(--text-muted);
-  font-size: 0.9rem;
+  font-size: 0.875rem;
 }
 
 .period-picker {
   display: flex;
-  flex: 0 1 16rem;
   gap: 4px;
+  max-width: 16rem;
 }
 
 /* Keeps the fieldset's spacing for the day controls now that they're grouped. */
 .day-block {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 10px;
 }
 
-/* A few digits of minutes don't need the full width of the add form. */
+/* A few digits of minutes don't need the full width of the form. */
 .field-schedule .field input[type='number'] {
   max-width: 12rem;
 }
@@ -641,7 +842,7 @@ input {
 
 .field .duration-part label {
   color: var(--text-muted);
-  font-size: 0.8rem;
+  font-size: 0.875rem;
 }
 
 .field .check-row {
@@ -649,6 +850,7 @@ input {
   align-items: center;
   gap: 8px;
   width: fit-content;
+  font-weight: 500;
   cursor: pointer;
 }
 
@@ -656,7 +858,7 @@ input {
   width: 18px;
   height: 18px;
   margin: 0;
-  accent-color: var(--accent);
+  accent-color: var(--ink);
 }
 
 .custom-goals {
@@ -681,7 +883,7 @@ input {
 
 .field .day-goal label {
   color: var(--text-muted);
-  font-size: 0.8rem;
+  font-size: 0.875rem;
 }
 
 .field .day-goal input[type='number'] {
@@ -714,22 +916,23 @@ input {
 .swatch-chip {
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius);
   background: var(--task-color);
   box-shadow: inset 0 0 0 1px var(--task-edge);
 }
 
 .swatch input:checked + .swatch-chip {
-  box-shadow: inset 0 0 0 1px var(--task-edge), 0 0 0 2px var(--surface), 0 0 0 4px var(--task-edge);
+  box-shadow: inset 0 0 0 1px var(--task-edge), 0 0 0 2px var(--bg), 0 0 0 4px var(--ink);
 }
 
 .swatch input:checked + .swatch-chip::after {
-  content: '✓';
-  color: var(--task-ink);
-  font-size: 0.95rem;
-  font-weight: 700;
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--task-ink);
 }
 
 .swatch input:focus-visible + .swatch-chip {
@@ -741,14 +944,16 @@ input {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 12px;
+  max-width: 34rem;
+  padding: 14px;
   border: 1px solid var(--danger-border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   background: var(--danger-soft);
+  color: var(--text);
 }
 
 .confirm-text {
-  font-size: 0.925rem;
+  font-size: 0.9375rem;
 }
 
 /* ---- Shared data bits ---------------------------------------------------- */
@@ -756,9 +961,9 @@ input {
 .dot {
   display: inline-block;
   flex: none;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
   background: var(--task-color);
   box-shadow: inset 0 0 0 1px var(--task-edge, transparent);
 }
@@ -766,133 +971,9 @@ input {
 .task-name {
   flex: 1;
   min-width: 0;
-  font-size: 1.05rem;
-  font-weight: 650;
+  font-size: 1.0625rem;
+  font-weight: 600;
   overflow-wrap: anywhere;
-}
-
-.progress {
-  height: 8px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: var(--surface-muted);
-}
-
-.progress-fill {
-  width: 0;
-  height: 100%;
-  border-radius: inherit;
-  background: var(--task-color, var(--accent));
-  box-shadow: inset 0 0 0 1px var(--task-edge, transparent);
-  transition: width 0.3s ease;
-}
-
-/* ---- Activities page ----------------------------------------------------- */
-
-.task-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
-  gap: 16px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.task-card {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 16px;
-  border: 1px solid var(--border);
-  border-top: 4px solid var(--task-edge);
-  border-radius: var(--radius);
-  background: var(--surface);
-  box-shadow: var(--shadow);
-}
-
-.task-card.is-running {
-  box-shadow: 0 0 0 2px var(--task-edge), var(--shadow);
-}
-
-.card-view {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.task-head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-
-.badge {
-  display: inline-flex;
-  flex: none;
-  align-items: center;
-  gap: 6px;
-  padding: 2px 8px;
-  border: 1px solid currentColor;
-  border-radius: 999px;
-  color: var(--task-edge);
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.badge::before {
-  content: '';
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: currentColor;
-  animation: pulse 1.6s ease-in-out infinite;
-}
-
-.time-label {
-  margin-top: 4px;
-  color: var(--text-muted);
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-/* Tabular digits stop the ticking clock from shifting width every second. */
-.task-time {
-  font-size: 2.25rem;
-  font-weight: 650;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.1;
-  letter-spacing: -0.01em;
-}
-
-.goal-row {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 4px 8px;
-  font-size: 0.925rem;
-}
-
-.task-goal {
-  color: var(--text-muted);
-}
-
-.task-remaining {
-  font-weight: 600;
-}
-
-.task-card.is-met .task-remaining {
-  color: var(--success);
-}
-
-.card-edit {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
 }
 
 .task-schedule {
@@ -900,74 +981,357 @@ input {
   font-size: 0.875rem;
 }
 
-/* Not scheduled today: still usable, just quieter. */
-.task-card.is-off:not(.is-running) {
+/* The goal track: ten segments, cut by ticks in the color of whatever the track sits on. */
+.progress {
+  position: relative;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--track-color, var(--surface-muted));
+}
+
+.progress-fill {
+  width: 0;
+  height: 100%;
+  background: var(--task-color, var(--ink));
+  box-shadow: inset 0 0 0 1px var(--task-edge, transparent);
+  transition: width 0.3s var(--ease);
+}
+
+.progress-ticks {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: space-evenly;
+  pointer-events: none;
+}
+
+.progress-ticks i {
+  width: 2px;
+  background: var(--tick-color, var(--bg));
+}
+
+/* ---- Activities: the stage ----------------------------------------------- */
+
+/*
+ * The whole content column is the stage. Idle, it's the page's own ground.
+ * While a timer runs it floods with that task's color, and its text and
+ * controls switch to the task's ink.
+ */
+.stage {
+  --stage-pad-top: 28px;
+  --stage-bg: var(--bg);
+  --stage-text: var(--text);
+  --stage-muted: var(--text-muted);
+  --track-color: var(--rail-raised);
+  --tick-color: var(--stage-bg);
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: var(--stage-pad-top) var(--gutter) 48px;
+  background: var(--stage-bg);
+  color: var(--stage-text);
+  transition: background-color 250ms var(--ease), color 250ms var(--ease);
+}
+
+/* The palette is chosen so the task's ink only just reaches 4.5:1 on it, so secondary text stays full ink and steps down by size instead. */
+.stage.is-running {
+  --stage-bg: var(--task-color);
+  --stage-text: var(--task-ink);
+  --stage-muted: var(--task-ink);
+  --track-color: color-mix(in srgb, var(--task-ink) 30%, var(--task-color));
+  --focus: var(--task-ink);
+  box-shadow: inset 0 0 0 1px var(--task-edge);
+}
+
+.stage-view,
+.stage-add {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.stage-add,
+.stage-edit,
+#stage-display > :not(.stage-meta) {
+  max-width: 980px;
+}
+
+/* The status line stays at the top; the task itself sits in the middle of the stage's height. */
+.stage-view {
+  flex: 1;
+}
+
+#stage-display {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+#stage-display > .stage-head {
+  margin-top: auto;
+  padding-top: 32px;
+}
+
+#stage-display > .stage-actions {
+  margin-bottom: auto;
+  padding-bottom: 8vh;
+}
+
+/* Spans the stage edge to edge, so it can become a band (below). */
+.stage-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 16px;
+  margin: calc(-1 * var(--stage-pad-top)) calc(-1 * var(--gutter)) 0;
+  padding: 12px var(--gutter);
+  color: var(--stage-muted);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  transition: background-color 250ms var(--ease), color 250ms var(--ease);
+}
+
+/*
+ * White on the light ground, or Charcoal on the dark one, barely changes the
+ * stage when it floods, so while those run the status line becomes an ink
+ * band: a running mark that doesn't depend on hue. js/activities.js sets
+ * is-near-light / is-near-dark from the task color's contrast with each ground.
+ */
+[data-theme='light'] .stage.is-running.is-near-light .stage-meta,
+[data-theme='dark'] .stage.is-running.is-near-dark .stage-meta {
+  background: var(--task-ink);
+  color: var(--task-color);
+  font-weight: 600;
+}
+
+.stage-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stage-head .task-square {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+}
+
+.stage.is-running .stage-head .task-square {
+  display: none;
+}
+
+.stage-name {
+  min-width: 0;
+  font-size: 2.25rem;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+
+.stage-schedule {
+  margin-top: 6px;
+  color: var(--stage-muted);
+  font-size: 1.0625rem;
+}
+
+.stage-time {
+  margin: 20px 0 18px -0.04em;
+  font-family: var(--font-figures);
+  font-size: 9rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 0.86;
+  letter-spacing: -0.01em;
+}
+
+.stage .progress {
+  height: 14px;
+}
+
+.stage.is-running .progress-fill {
+  background: var(--task-ink);
   box-shadow: none;
+}
+
+.stage-goal {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 16px;
+  margin-top: 10px;
+  font-size: 1.0625rem;
+}
+
+.stage-goal-text {
+  color: var(--stage-muted);
+}
+
+.stage-remaining {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.stage-last {
+  margin-top: 6px;
+  color: var(--stage-muted);
+  font-size: 0.9375rem;
+}
+
+.stage-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 36px;
+}
+
+.stage-actions .inline-confirm {
+  flex-basis: 100%;
+}
+
+/* The one big control: filled with the task color while idle, inverted to ink while running. */
+.btn-stage {
+  min-width: 10rem;
+  min-height: 56px;
+  padding: 0 28px;
+  border: 0;
+  background: var(--task-color);
+  box-shadow: inset 0 0 0 1px var(--task-edge);
+  color: var(--task-ink);
+  font-size: 1.125rem;
+}
+
+.btn-stage:hover {
+  background: color-mix(in srgb, var(--task-color) 86%, var(--text));
+}
+
+.stage.is-running .btn-stage {
+  background: var(--task-ink);
+  box-shadow: none;
+  color: var(--task-color);
+}
+
+.stage.is-running .btn-stage:hover {
+  background: color-mix(in srgb, var(--task-ink) 88%, var(--task-color));
+}
+
+.stage .btn-quiet {
+  color: var(--stage-muted);
+}
+
+.stage .btn-quiet:hover {
+  background: color-mix(in srgb, var(--stage-text) 10%, transparent);
+  color: var(--stage-text);
+}
+
+.stage .btn-quiet-danger:hover {
+  background: var(--danger-soft);
+  color: var(--danger-text);
+}
+
+/* Add and edit forms sit on the idle stage, never on a flooded one. */
+.stage-form-head {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: clamp(12px, 4vh, 40px) 0 28px;
+}
+
+.stage-form-title {
+  font-size: 2.25rem;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.stage-form-intro {
+  max-width: 56ch;
+  color: var(--text-muted);
+  font-size: 1.0625rem;
+}
+
+.stage-edit {
+  margin-top: 28px;
 }
 
 /* ---- Analytics page ------------------------------------------------------ */
 
-.stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
-  gap: 16px;
-}
-
-.stat {
-  padding: 16px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--surface);
-  box-shadow: var(--shadow);
-}
-
-.stat-label {
+.summary {
   color: var(--text-muted);
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: 1.1875rem;
 }
 
-.stat-value {
-  font-size: 2rem;
+.summary strong {
+  color: var(--text);
+  font-family: var(--font-figures);
+  font-size: 1.625rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  line-height: 1.2;
 }
 
 #analytics-content {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 40px;
+}
+
+/* One header row for the metrics on wide screens; each row keeps its own labels for screen readers and for phones. */
+.progress-columns {
+  display: grid;
+  grid-template-columns: repeat(3, 6rem);
+  justify-content: end;
+  gap: 12px;
+  padding-bottom: 6px;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
 }
 
 .progress-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
-  gap: 12px;
   margin: 0;
   padding: 0;
+  border-top: 1px solid var(--border);
   list-style: none;
 }
 
 .progress-item {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 16px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--surface);
-  box-shadow: var(--shadow);
+  display: grid;
+  grid-template-areas:
+    'head bar metrics'
+    'sched bar metrics';
+  grid-template-columns: minmax(0, 15rem) minmax(8rem, 1fr) auto;
+  align-items: center;
+  gap: 2px 28px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--grid-line);
 }
 
 .progress-item-head {
   display: flex;
+  grid-area: head;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  min-width: 0;
+}
+
+.progress-item .task-schedule {
+  grid-area: sched;
+  padding-left: 20px;
+}
+
+.progress-item .progress {
+  --track-color: var(--rail-raised);
+  grid-area: bar;
 }
 
 .percent {
-  font-weight: 700;
+  font-family: var(--font-figures);
+  font-size: 1.125rem;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
@@ -977,26 +1341,32 @@ input {
 
 .progress-item.is-off .percent {
   color: var(--text-muted);
-  font-weight: 600;
+  font-family: var(--font);
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 
 .metrics {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+  grid-area: metrics;
+  grid-template-columns: repeat(3, 6rem);
+  gap: 12px;
   margin: 0;
 }
 
 .metric dt {
-  color: var(--text-muted);
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .metric dd {
   margin: 0;
+  font-family: var(--font-figures);
+  font-size: 1.125rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
@@ -1005,10 +1375,6 @@ input {
 .table-scroll {
   position: relative;
   overflow-x: auto;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--surface);
-  box-shadow: var(--shadow);
 }
 
 .week-table {
@@ -1016,7 +1382,7 @@ input {
   min-width: 640px;
   border-collapse: separate;
   border-spacing: 0;
-  font-size: 0.925rem;
+  font-size: 0.9375rem;
 }
 
 .week-table th,
@@ -1027,29 +1393,27 @@ input {
   white-space: nowrap;
 }
 
-.week-table tbody tr:last-child > * {
-  border-bottom: 0;
-}
-
 .week-table thead th {
+  border-bottom: 2px solid var(--ink);
   color: var(--text-muted);
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-size: 0.8125rem;
+  font-weight: 500;
 }
 
 .th-day {
   display: block;
   color: var(--text);
-  font-size: 0.875rem;
-  font-weight: 700;
+  font-size: 0.9375rem;
+  font-weight: 600;
 }
 
 .th-date {
   display: block;
 }
 
-.week-table th.is-today .th-day {
-  color: var(--accent-text);
+/* The newest day is always the last column. */
+.week-table tr > :last-child {
+  background: var(--today-bg);
 }
 
 /* The task column stays put while the day columns scroll underneath it. */
@@ -1059,8 +1423,7 @@ input {
   z-index: 1;
   max-width: 180px;
   overflow: hidden;
-  background: var(--surface);
-  box-shadow: 1px 0 0 var(--grid-line);
+  background: var(--bg);
   text-align: left;
   text-overflow: ellipsis;
 }
@@ -1071,25 +1434,35 @@ input {
 
 .week-table tbody th .dot {
   margin-right: 8px;
-  vertical-align: -1px;
+  vertical-align: 0;
 }
 
 .week-table td {
+  font-family: var(--font-figures);
+  font-size: 1.0625rem;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
 .week-table td.is-empty {
   color: var(--text-muted);
+  font-weight: 500;
 }
 
 .week-table td.is-met {
-  background: var(--success-soft);
-  color: var(--success);
-  font-weight: 700;
+  background: color-mix(in srgb, var(--task-color) 18%, var(--bg));
+}
+
+.week-table tr > td.is-met:last-child {
+  background: color-mix(in srgb, var(--task-color) 18%, var(--today-bg));
 }
 
 .cell-check {
+  display: inline-flex;
   margin-left: 4px;
+  color: var(--task-edge);
+  font-size: 0.875rem;
+  vertical-align: -1px;
 }
 
 /* ---- Calendar page ------------------------------------------------------- */
@@ -1098,7 +1471,7 @@ input {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px 16px;
+  gap: 12px 20px;
 }
 
 .cal-nav {
@@ -1107,20 +1480,19 @@ input {
 }
 
 .cal-range {
-  font-size: 1.1rem;
+  font-size: 1.1875rem;
   font-weight: 600;
 }
 
 .cal-scroll {
   position: relative;
-  height: min(72vh, 820px);
+  height: min(74vh, 840px);
   min-height: 380px;
   overflow: auto;
   overscroll-behavior: contain;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--surface);
-  box-shadow: var(--shadow);
+  border-top: 2px solid var(--ink);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
 }
 
 .cal-grid {
@@ -1138,8 +1510,8 @@ input {
   top: 0;
   z-index: 4;
   border-bottom: 1px solid var(--border);
-  background: var(--surface);
-  box-shadow: 0 -2px 0 var(--surface);
+  background: var(--bg);
+  box-shadow: 0 -2px 0 var(--bg);
 }
 
 .cal-corner {
@@ -1158,34 +1530,37 @@ input {
 
 .cal-dow {
   color: var(--text-muted);
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 
 .cal-date {
   display: grid;
   place-items: center;
-  width: 36px;
+  min-width: 36px;
   height: 36px;
-  border-radius: 50%;
-  font-size: 1.2rem;
+  padding: 0 4px;
+  border-radius: var(--radius);
+  font-family: var(--font-figures);
+  font-size: 1.5rem;
   font-weight: 600;
 }
 
 .cal-day-head.is-today .cal-dow {
-  color: var(--accent-text);
+  color: var(--text);
+  font-weight: 600;
 }
 
 .cal-day-head.is-today .cal-date {
-  background: var(--accent);
-  color: #fff;
+  background: var(--ink);
+  color: var(--on-ink);
 }
 
 .cal-total {
   color: var(--text-muted);
-  font-size: 0.8rem;
+  font-family: var(--font-figures);
+  font-size: 0.9375rem;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
@@ -1194,14 +1569,14 @@ input {
   left: 0;
   z-index: 3;
   height: calc(24 * var(--hour-height));
-  background: var(--surface);
+  background: var(--bg);
 }
 
 .hour-label {
   position: absolute;
   right: 8px;
   color: var(--text-muted);
-  font-size: 0.7rem;
+  font-size: 0.8125rem;
   white-space: nowrap;
   transform: translateY(-50%);
 }
@@ -1228,11 +1603,11 @@ input {
   padding: 2px 6px;
   overflow: hidden;
   border: 0;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: var(--task-color);
-  box-shadow: inset 0 0 0 1px var(--task-edge), 0 0 0 1px var(--surface);
+  box-shadow: inset 0 0 0 1px var(--task-edge), 0 0 0 1px var(--bg);
   color: var(--task-ink);
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   line-height: 1.25;
   text-align: left;
   cursor: pointer;
@@ -1250,12 +1625,13 @@ input {
 .block-name {
   max-width: 100%;
   overflow: hidden;
-  font-weight: 700;
+  font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .block-meta {
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
@@ -1274,29 +1650,19 @@ input {
   padding: 0;
 }
 
-/* Dark stripes (never light ones) so the label keeps its contrast while the session is running. */
+/* The running session is ringed in its own ink, inside the block, so the label keeps its contrast. */
 .cal-block.is-running {
-  background-image: repeating-linear-gradient(135deg, rgba(0, 0, 0, 0.14) 0 6px, transparent 6px 12px);
+  box-shadow: inset 0 0 0 2px var(--task-ink), 0 0 0 1px var(--bg);
 }
 
-.cal-block.is-running::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: 3px;
-  background: var(--task-ink);
-  animation: pulse 1.6s ease-in-out infinite;
-}
-
+/* Drawn in the running task's color when one is running (set by js/calendar.js), otherwise in ink. */
 .now-line {
   position: absolute;
   right: 0;
   left: 0;
   z-index: 3;
   height: 2px;
-  background: var(--now);
+  background: var(--task-edge, var(--ink));
   pointer-events: none;
   transform: translateY(-1px);
 }
@@ -1305,11 +1671,11 @@ input {
   content: '';
   position: absolute;
   top: -4px;
-  left: -5px;
-  width: 10px;
+  left: -1px;
+  width: 4px;
   height: 10px;
-  border-radius: 50%;
-  background: var(--now);
+  border-radius: 1px;
+  background: inherit;
 }
 
 .cal-popover {
@@ -1321,19 +1687,18 @@ input {
   max-width: 260px;
   padding: 10px 12px;
   border: 1px solid var(--border);
-  border-left: 4px solid var(--task-edge);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   background: var(--surface);
   box-shadow: var(--shadow-pop);
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
   pointer-events: none;
 }
 
 .pop-title {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-weight: 700;
+  gap: 8px;
+  font-weight: 600;
 }
 
 .pop-range,
@@ -1355,75 +1720,71 @@ input {
   flex-direction: column;
   gap: 10px;
   padding: 10px;
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
-  background: var(--surface);
   cursor: pointer;
 }
 
 .theme-option:hover {
-  background: var(--surface-muted);
+  border-color: var(--border-strong);
 }
 
-/* A thicker accent border marks the choice, alongside the radio's own dot. */
+/* A heavier ink border marks the choice, alongside the radio's own dot. */
 .theme-option:has(input:checked) {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent);
+  border-color: var(--ink);
+  box-shadow: 0 0 0 1px var(--ink);
 }
 
 .theme-preview {
   display: flex;
   overflow: hidden;
-  height: 84px;
+  height: 88px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
 }
 
-/* Drawn from the tokens of the pane's own data-theme, not the page's. */
+/* A miniature of the app in the pane's own data-theme: the rail, then a running task's stage. */
 .preview-pane {
   display: flex;
   flex: 1;
-  flex-direction: column;
-  gap: 8px;
   min-width: 0;
   background: var(--bg);
 }
 
 .preview-bar {
-  height: 14px;
-  border-bottom: 1px solid var(--border);
-  background: var(--surface);
+  flex: 0 0 30%;
+  border-right: 1px solid var(--border);
+  background: var(--rail);
 }
 
 .preview-card {
   display: flex;
+  flex: 1;
   flex-direction: column;
-  gap: 5px;
-  margin: 0 10px;
-  padding: 7px 8px;
-  border: 1px solid var(--border);
-  border-radius: 5px;
-  background: var(--surface);
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
+  background: #7c3aed;
 }
 
 .preview-line {
-  width: 70%;
+  width: 60%;
   height: 5px;
-  border-radius: 3px;
-  background: var(--text);
+  border-radius: 1px;
+  background: #ffffff;
 }
 
 .preview-line.is-muted {
-  width: 45%;
-  background: var(--text-muted);
+  width: 85%;
+  height: 12px;
 }
 
 .preview-pill {
-  width: 30px;
+  width: 28px;
   max-width: 100%;
   height: 9px;
-  border-radius: 999px;
-  background: var(--accent);
+  border-radius: 2px;
+  background: #ffffff;
 }
 
 .theme-label {
@@ -1437,7 +1798,7 @@ input {
   width: 18px;
   height: 18px;
   margin: 2px 0 0;
-  accent-color: var(--accent);
+  accent-color: var(--ink);
   cursor: pointer;
 }
 
@@ -1447,7 +1808,7 @@ input {
 }
 
 .theme-name {
-  font-weight: 650;
+  font-weight: 600;
 }
 
 .theme-hint {
@@ -1459,6 +1820,7 @@ input {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  max-width: 40rem;
   margin-bottom: 16px;
 }
 
@@ -1469,10 +1831,11 @@ input {
 .storage-value {
   margin-right: 4px;
   color: var(--text);
-  font-size: 2rem;
+  font-family: var(--font-figures);
+  font-size: 2.5rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  line-height: 1.2;
+  line-height: 1.1;
 }
 
 .storage-percent {
@@ -1482,6 +1845,7 @@ input {
 }
 
 .storage-breakdown {
+  max-width: 40rem;
   margin: 0 0 12px;
   border-top: 1px solid var(--grid-line);
 }
@@ -1520,38 +1884,257 @@ input {
 
 .storage-status {
   margin-bottom: 4px;
-  font-size: 0.925rem;
+  font-size: 0.9375rem;
 }
 
 .storage-note {
+  max-width: 68ch;
   color: var(--text-muted);
   font-size: 0.875rem;
 }
 
-/* ---- Small screens, motion, forced colors -------------------------------- */
+/* ---- Medium screens ------------------------------------------------------ */
 
-@media (max-width: 600px) {
-  .page {
-    gap: 20px;
-    padding-top: 16px;
+@media (max-width: 1100px) {
+  .stage-time {
+    font-size: 7rem;
   }
 
-  /* Four links barely fit at 375px, so they may wrap onto a second line on narrower screens. */
+  .progress-item {
+    grid-template-areas:
+      'head metrics'
+      'sched metrics'
+      'bar bar';
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: 6px;
+  }
+
+  .progress-columns {
+    display: none;
+  }
+
+  .metric dt {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+    color: var(--text-muted);
+    font-size: 0.8125rem;
+  }
+}
+
+/*
+ * Phones and small tablets: the rail dissolves. Its header becomes a brand
+ * bar on top, the nav a tab bar along the bottom (in thumb reach), and the task
+ * list moves below the stage on Activities. `display: contents` is only ever
+ * on the plain .rail div, so no landmark loses its role.
+ */
+@media (max-width: 899px) {
+  .shell {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .rail {
+    display: contents;
+  }
+
+  .rail-head {
+    order: 0;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px var(--gutter);
+    border-bottom: 1px solid var(--border);
+    background: var(--rail);
+  }
+
+  .brand {
+    padding: 0;
+  }
+
+  .main-col {
+    flex: 1;
+    order: 1;
+  }
+
+  .rail-tasks {
+    order: 2;
+    padding: 4px var(--gutter) 24px;
+  }
+
+  body:not([data-page='activities']) .rail-tasks {
+    display: none;
+  }
+
+  .site-footer {
+    order: 3;
+    padding-bottom: calc(var(--tabbar-height) + env(safe-area-inset-bottom) + 20px);
+  }
+
+  .rail-nav {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 30;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--border);
+    background: var(--rail);
+  }
+
   .nav-list {
-    flex-wrap: wrap;
-    gap: 2px;
+    flex-direction: row;
+  }
+
+  .nav-list li {
+    flex: 1;
   }
 
   .nav-list a {
-    padding: 6px 10px;
+    display: grid;
+    place-items: center;
+    min-height: 46px;
+    padding: 4px;
+    font-size: 0.9375rem;
+    text-align: center;
   }
 
-  .task-time {
-    font-size: 2rem;
+  .rail-group-title {
+    padding-top: 20px;
   }
 
-  .stat-value {
-    font-size: 1.6rem;
+  .rail-task-link,
+  .rail-play,
+  .rail-add {
+    min-height: 48px;
+  }
+
+  .rail-play {
+    width: 48px;
+    height: 48px;
+    font-size: 1rem;
+  }
+
+  /* The running task follows you to every page, docked just above the tab bar. */
+  .now-chip {
+    position: fixed;
+    right: 8px;
+    bottom: calc(var(--tabbar-height) + env(safe-area-inset-bottom) + 8px);
+    left: 8px;
+    z-index: 29;
+    display: flex;
+    align-items: center;
+    border-radius: var(--radius);
+    background: var(--task-color);
+    box-shadow: inset 0 0 0 1px var(--task-edge), var(--shadow-pop);
+    color: var(--task-ink);
+    --focus: var(--task-ink);
+  }
+
+  .now-chip[hidden],
+  [data-page='activities'] .now-chip {
+    display: none;
+  }
+
+  body:has(.now-chip:not([hidden])):not([data-page='activities']) .site-footer {
+    padding-bottom: calc(var(--tabbar-height) + env(safe-area-inset-bottom) + 84px);
+  }
+
+  .now-chip-link {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    min-height: 56px;
+    padding: 0 14px;
+    color: inherit;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .now-chip-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .now-chip-time {
+    margin-left: auto;
+    font-family: var(--font-figures);
+    font-size: 1.375rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .now-chip-pause {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    border: 0;
+    border-left: 1px solid color-mix(in srgb, var(--task-ink) 30%, transparent);
+    background: transparent;
+    color: inherit;
+    font-size: 1.125rem;
+    cursor: pointer;
+  }
+
+  .stage {
+    --stage-pad-top: 20px;
+    min-height: 0;
+    padding-bottom: 32px;
+  }
+
+  #stage-display > .stage-head {
+    padding-top: 28px;
+  }
+
+  #stage-display > .stage-actions {
+    padding-bottom: 0;
+  }
+
+  .stage-name,
+  .stage-form-title {
+    font-size: 1.75rem;
+  }
+
+  .stage-time {
+    margin: 14px 0 14px -0.04em;
+    font-size: clamp(4.5rem, 22vw, 6rem);
+  }
+
+  .stage-actions {
+    margin-top: 24px;
+  }
+
+  .stage-actions > .btn-row {
+    flex: 1 1 100%;
+  }
+
+  .btn-stage {
+    flex: 1 1 100%;
+  }
+
+  .page {
+    gap: 24px;
+    padding-top: 24px;
+  }
+
+  .metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .progress-item {
+    grid-template-areas:
+      'head'
+      'sched'
+      'bar'
+      'metrics';
+    grid-template-columns: minmax(0, 1fr);
   }
 
   /* Stacked full-width, the theme cards are mostly preview, so put it beside the label instead. */
@@ -1567,34 +2150,12 @@ input {
     height: 64px;
   }
 
-  .preview-pane {
-    gap: 6px;
-  }
-
-  .preview-bar {
-    height: 10px;
-  }
-
-  .preview-card {
-    margin: 0 8px;
-    padding: 5px 6px;
-  }
-
   .storage-value {
-    font-size: 1.6rem;
+    font-size: 2rem;
   }
 }
 
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.35;
-  }
-}
+/* ---- Motion and forced colors -------------------------------------------- */
 
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -1609,12 +2170,16 @@ input {
 @media (forced-colors: active) {
   .cal-block,
   .progress,
-  .swatch-chip {
+  .swatch-chip,
+  .rail-task.is-running,
+  .stage.is-running,
+  .now-chip {
     border: 1px solid CanvasText;
   }
 
   /* The theme previews are pictures of each theme, so they keep their real colors. */
   .dot,
+  .task-square,
   .swatch-chip,
   .progress-fill,
   .theme-preview {
@@ -1632,5 +2197,10 @@ input {
     border-color: Highlight;
     background: Highlight;
     color: HighlightText;
+  }
+
+  .rail-task.is-selected,
+  .nav-list a[aria-current='page'] {
+    outline: 2px solid Highlight;
   }
 }

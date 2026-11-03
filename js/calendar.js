@@ -271,6 +271,10 @@
       nowLine: columns.map((c) => c.nowLine).find(Boolean) || null,
     }
 
+    // The now-line takes the running task's color, the same color that task wears in the rail.
+    const activeTask = state.active && state.tasks.find((t) => t.id === state.active.taskId)
+    if (view.nowLine && activeTask) ui.setTaskColor(view.nowLine, activeTask.color)
+
     if (focusedKey && view.blocks.has(focusedKey)) view.blocks.get(focusedKey).node.focus({ preventScroll: true })
     if (popoverKey && view.blocks.has(popoverKey)) showPopover(popoverKey)
     else hidePopover()
@@ -344,6 +348,7 @@
   window.addEventListener('resize', followAnchor)
 
   ui.mountChrome()
+  ui.mountRail()
   store.subscribe(() => render())
   render()
   scrollToFocusHour(Date.now())

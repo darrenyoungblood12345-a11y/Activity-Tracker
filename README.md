@@ -4,10 +4,12 @@ A small static site for tracking time on tasks. Each task has its own stopwatch 
 
 | Page | What it does |
 |---|---|
-| **Activities** (`/index.html`) | Create tasks, and choose a goal per day (with the days they happen and each day's goal), per week or per month. Start or pause each stopwatch. Only one runs at a time. Daily tasks that aren't scheduled today are listed separately and can still be started. Weekly and monthly tasks show this week's or this month's total. |
+| **Activities** (`/index.html`) | One task at a time, full size: its stopwatch, goal and progress, with Start or Pause, Edit and Delete. Only one stopwatch runs at a time, and while it runs the page fills with that task's color. Choose a task from the list, or add one with **Add a task**: a goal per day (with the days it happens and each day's goal), per week or per month. Weekly and monthly tasks show this week's or this month's total. |
 | **Analytics** (`/analytics/`) | Today's total, goals met, per-task progress toward the current day, week or month, and a 7-day goal table. Days a task isn't scheduled don't count against it. |
-| **Calendar** (`/calendar/`) | A Google Calendar–style week view with one block per tracked session. |
+| **Calendar** (`/calendar/`) | A week view with one block per tracked session. |
 | **Settings** (`/settings/`) | Choose the Light theme, the Dark theme or Match device, and see an estimate of how much browser storage the tracker uses. |
+
+Every page has the same task list down the left side (or below the stopwatch on Activities on a phone), split into **Today** and **Not today**. Each task shows its time so far and a Start/Pause button, so you can switch tasks from any page, and its name opens it on the Activities page. On a phone the pages are listed in a bar along the bottom, and whatever is running sits just above it.
 
 ## Run it locally
 
@@ -55,7 +57,7 @@ All tracked data is stored under one `localStorage` key, `timeTracker.v1`. The k
 
 ### Backup, restore and reset
 
-- **Export JSON** in the footer downloads a backup of all your data.
+- **Export JSON** at the bottom of every page downloads a backup of all your data.
 - **Import JSON** asks for confirmation, then *replaces* all current data with the file's contents. Invalid entries in the file are dropped.
 - **To start over**, run `localStorage.removeItem('timeTracker.v1')` in the browser console and reload the page.
 - **To remove the pre-upgrade copy** once you're happy with the upgrade, run `localStorage.removeItem('timeTracker.v1.pre-upgrade')`.
@@ -68,11 +70,12 @@ analytics/index.html    Analytics page
 calendar/index.html     Calendar page
 settings/index.html     Settings page
 css/styles.css          Shared styles
+fonts/                  Barlow and Barlow Condensed (SIL Open Font License), served from the site itself
 js/theme.js             Applies the saved theme before the first paint
 js/time.js              Pure date/duration helpers (no DOM)
 js/storage.js           Data model, validation, load/save, cross-tab sync
-js/ui.js                Shared page chrome: DOM helper, ticker, banner, export/import
-js/activities.js        Activities page
+js/ui.js                Shared page chrome: DOM helper, ticker, icons, the task list, banner, export/import
+js/activities.js        Activities page: the selected task, and the add and edit forms
 js/analytics.js         Analytics page
 js/calendar.js          Calendar page
 js/settings.js          Settings page
@@ -87,4 +90,6 @@ Scripts are classic `<script defer>` tags that load in this order: `time.js`, `s
 - Goals and schedules have no history. Editing either recalculates progress for every day, including the 7-day table.
 - In the 7-day table, weekly and monthly tasks show the time tracked each day rather than a percentage, since their goal isn't met on any single day.
 - Text on a task color switches between white and dark by contrast, so light colors such as White stay readable on buttons and calendar blocks.
+- The task shown on Activities is kept in the address, as `#task-<id>` (or `#add` for the add form), so the task list's links work from every page and a reload keeps your place. Starting a task shows it.
+- No fonts or other files are loaded from other sites; the fonts in `fonts/` come with the site.
 - Task colors fill the same way in both themes. In the dark theme, outlines and text drawn in a task's color use a lighter tint of it (`darkEdge` in `js/storage.js`), so dark colors such as Charcoal stay visible. The switch uses CSS `light-dark()` (Chrome 123+, Safari 17.5+, Firefox 120+), so changing themes restyles the page without a reload.

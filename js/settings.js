@@ -86,6 +86,7 @@
   // ---- Init -----------------------------------------------------------------
 
   ui.mountChrome()
+  ui.mountRail()
   syncThemeRadios(theme.getTheme())
   theme.subscribe((choice) => {
     syncThemeRadios(choice)

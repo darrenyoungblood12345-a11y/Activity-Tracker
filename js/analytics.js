@@ -70,7 +70,7 @@
 
   const buildCell = () => {
     const valueEl = el('span', { className: 'cell-value' })
-    const checkEl = el('span', { className: 'cell-check', 'aria-hidden': 'true', text: '✓' })
+    const checkEl = el('span', { className: 'cell-check', 'aria-hidden': 'true' }, ui.icon('check'))
     const srEl = el('span', { className: 'visually-hidden' })
     return { td: el('td', {}, valueEl, checkEl, srEl), valueEl, checkEl, srEl }
   }
@@ -117,7 +117,7 @@
   /*
    * Days before the task existed, and days it isn't scheduled, have no goal to
    * measure against. Time tracked on an unscheduled day is still shown, but
-   * never as a percentage or a ✓.
+   * never as a percentage or a check.
    */
   const paintCell = (cell, task, dayStart, doneMs) => {
     const day = time.formatMonthDay(dayStart)
@@ -161,7 +161,8 @@
     const scheduled = todays.filter((t) => t.goalMinutes > 0)
 
     setText(todayLabel, time.formatLongDate(now))
-    setText(totalEl, time.formatHMS(time.totalForDay(sessions, today)))
+    const totalMs = time.totalForDay(sessions, today)
+    setText(totalEl, totalMs === 0 ? '0m' : time.formatShort(totalMs))
     setText(goalsMetEl, `${scheduled.filter((t) => t.progress.met).length} of ${scheduled.length}`)
 
     todays.forEach(({ task, doneMs, goalMinutes, progress }) => {
@@ -175,7 +176,7 @@
       setText(item.done.dd, time.formatHMS(doneMs))
       setText(item.goal.dd, off ? 'None today' : time.formatGoal(goalMinutes))
       setText(item.remaining.dt, progress.met ? 'Over goal' : 'Remaining')
-      setText(item.remaining.dd, off ? '—' : progress.met ? `+${time.formatShort(progress.overMs)} ✓` : time.formatShort(progress.remainingMs, { ceil: true }))
+      setText(item.remaining.dd, off ? '—' : progress.met ? `+${time.formatShort(progress.overMs)}` : time.formatShort(progress.remainingMs, { ceil: true }))
       item.node.classList.toggle('is-met', progress.met)
       item.node.classList.toggle('is-off', off)
       days.forEach((dayStart, i) => paintCell(week.cells[i], task, dayStart, time.totalForDay(sessions, dayStart, task.id)))
@@ -183,6 +184,7 @@
   }
 
   ui.mountChrome()
+  ui.mountRail()
   store.subscribe(() => render())
   render()
   ui.startTicker(tick)
