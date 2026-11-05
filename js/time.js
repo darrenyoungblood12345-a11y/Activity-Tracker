@@ -50,21 +50,31 @@
   const isValidInterval = ({ start, end }) =>
     Number.isFinite(start) && Number.isFinite(end) && end > start
 
+  // Local midnights from the day containing `start` up to, not including, `end`.
+  const dayStartsBetween = (start, end) => {
+    const days = []
+    for (let day = startOfDay(start); day < end; day = addDays(day, 1)) days.push(day)
+    return days
+  }
+
   /*
-   * Splits a session at each local midnight it crosses, so an overnight session
-   * counts toward (and renders in) both days. The raw record is never changed;
-   * each piece copies the session's other fields (id, taskId, …) and adds the
-   * `dayStart` it belongs to.
+   * The part of a session inside [rangeStart, rangeEnd), split at each local
+   * midnight it crosses, so an overnight session counts toward (and renders
+   * in) both days. The raw record is never changed; each piece copies the
+   * session's other fields (id, taskId, …) and adds the `dayStart` it belongs
+   * to. The range is required: a session can span years, and only the days
+   * being shown should ever be generated.
    */
-  const splitByDay = (session) => {
-    if (!isValidInterval(session)) return []
-    const dayStart = startOfDay(session.start)
-    const nextDayStart = addDays(dayStart, 1)
-    if (session.end <= nextDayStart) return [{ ...session, dayStart }]
-    return [
-      { ...session, end: nextDayStart, dayStart },
-      ...splitByDay({ ...session, start: nextDayStart }),
-    ]
+  const splitByDay = (session, rangeStart, rangeEnd) => {
+    const start = Math.max(session.start, rangeStart)
+    const end = Math.min(session.end, rangeEnd)
+    if (!isValidInterval({ start, end })) return []
+    return dayStartsBetween(start, end).map((dayStart) => ({
+      ...session,
+      start: Math.max(start, dayStart),
+      end: Math.min(end, addDays(dayStart, 1)),
+      dayStart,
+    }))
   }
 
   const overlapMs = (start, end, rangeStart, rangeEnd) =>

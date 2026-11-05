@@ -49,9 +49,9 @@ All tracked data is stored under one `localStorage` key, `timeTracker.v1`. The k
 - **Elapsed time always comes from timestamps** (`now - start`), never from counting timer ticks. Background tabs, sleep and refreshes can't make the clock drift.
 - **The running timer is stored**, so it survives refreshes, moving between pages and closing the tab.
 - **Sessions that cross midnight** are stored once, as-is. They're split at local midnight only when totals are calculated or blocks are drawn (`splitByDay` in `js/time.js`), so they count toward both days.
-- **Multiple tabs stay in sync** through the browser's `storage` event. Each change re-reads the latest saved state before writing, so one tab can't overwrite another tab's changes.
+- **Multiple tabs stay in sync** through the browser's `storage` event. Each change holds a [Web Lock](https://developer.mozilla.org/docs/Web/API/Web_Locks_API) shared by every tab while it re-reads the latest saved state, applies the change and saves it, so two tabs changing data at the same moment can't overwrite each other. Web Locks need a secure address (`https://` or `localhost`); elsewhere, changes are saved without the lock.
 - **Corrupt data** is replaced with an empty state instead of crashing the app. The unreadable original is kept under `timeTracker.v1.corrupt`, and a banner explains what happened.
-- **If storage is blocked or full**, the app keeps working in memory and shows a warning banner. Use Export to save a copy of your data.
+- **If storage is full or read-only**, your saved data still loads, new changes are kept in memory, and a warning banner says so. If storage is blocked entirely, the tracker starts empty and works the same way. Every page is a separate document, so changes kept in memory last only until you reload the page or open another one. Once there are any, the browser asks before you leave, so you can Export a copy first.
 - **The theme** is saved separately under `timeTracker.theme` (`"light"`, `"dark"` or `"system"`, and Light when unset). It's a preference for this browser, so Export and Import leave it alone. It syncs across open tabs like everything else.
 - **The storage estimate** on the Settings page adds up the characters of every key and value saved at this address and compares the total with the roughly 5 MB that browsers allow per site. Browsers don't report localStorage usage, so it's an estimate. Keys from other apps served from the same address, such as other `localhost` projects, count against the same limit and appear on a separate line.
 
@@ -90,6 +90,6 @@ Scripts are classic `<script defer>` tags that load in this order: `time.js`, `s
 - Goals and schedules have no history. Editing either recalculates progress for every day, including the 7-day table.
 - In the 7-day table, weekly and monthly tasks show the time tracked each day rather than a percentage, since their goal isn't met on any single day.
 - Text on a task color switches between white and dark by contrast, so light colors such as White stay readable on buttons and calendar blocks.
-- The task shown on Activities is kept in the address, as `#task-<id>` (or `#add` for the add form), so the task list's links work from every page and a reload keeps your place. Starting a task shows it.
+- The task shown on Activities is kept in the address, as `#task-<id>` with the id URL-encoded (or `#add` for the add form), so the task list's links work from every page and a reload keeps your place. Starting a task shows it.
 - No fonts or other files are loaded from other sites; the fonts in `fonts/` come with the site.
 - Task colors fill the same way in both themes. In the dark theme, outlines and text drawn in a task's color use a lighter tint of it (`darkEdge` in `js/storage.js`), so dark colors such as Charcoal stay visible. The switch uses CSS `light-dark()` (Chrome 123+, Safari 17.5+, Firefox 120+), so changing themes restyles the page without a reload.

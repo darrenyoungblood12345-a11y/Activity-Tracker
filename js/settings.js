@@ -47,8 +47,8 @@
     )
 
   const statusText = (usage) => {
-    if (!usage) return 'This browser is blocking storage, so nothing can be saved or measured. Your tasks last only until this tab closes.'
-    if (!store.isPersistent()) return 'The last save failed, so recent changes are only in this tab. Use Export JSON below to keep a copy.'
+    if (!usage) return 'This browser is blocking storage, so nothing can be saved or measured. Your tasks last only until you reload this page or open another one.'
+    if (!store.isPersistent()) return "Browser storage is full or read-only, so changes can't be saved and are kept only on this page. Use Export JSON below to keep a copy."
     return 'Saving normally to this browser.'
   }
 

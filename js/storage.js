@@ -103,8 +103,11 @@
 
   // ---- Validation ---------------------------------------------------------
 
+  // The largest time a Date can hold, either side of 1970. Anything beyond it can't be shown or split into days.
+  const MAX_TIMESTAMP = 8.64e15
+
   const isObject = (v) => v !== null && typeof v === 'object' && !Array.isArray(v)
-  const isTimestamp = (v) => typeof v === 'number' && Number.isFinite(v)
+  const isTimestamp = (v) => typeof v === 'number' && Number.isFinite(v) && Math.abs(v) <= MAX_TIMESTAMP
   const isHexColor = (v) => typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v)
   const cleanName = (v) => (typeof v === 'string' ? v.trim().slice(0, NAME_MAX_LENGTH) : '')
   const clampGoal = (v) => Math.min(GOAL_MAX, Math.max(GOAL_MIN, Math.round(v)))
@@ -300,7 +303,9 @@
     setWarning(message)
   }
 
-  const SAVE_FAILED = "Couldn't save to browser storage (it may be full or blocked). Changes are kept only while this tab is open, so use Export to back them up."
+  const SAVE_FAILED = "Couldn't save to browser storage (it may be full or blocked). New changes are kept only on this page and are lost if you reload it or open another page, so use Export to back them up."
+  const STORAGE_READ_ONLY = "Browser storage is full or read-only, so your saved data is shown but new changes can't be saved. They're lost if you reload this page or open another one, so use Export to keep a copy."
+  const STORAGE_BLOCKED = 'This browser is blocking storage, so tracked time is lost when you reload this page or open another one. Use Export to keep a copy.'
 
   // ---- Upgrading saved data -------------------------------------------------
 
@@ -335,17 +340,47 @@
   }
 
   /*
-   * Re-reads the latest stored state before applying the change, so a tab
-   * holding a stale copy can't overwrite what another tab just saved.
+   * Every page is its own document, so a change that only reached memory is
+   * lost when this page is left or reloaded. Asking first gives a chance to
+   * Export. Only added once there's something to lose, since a beforeunload
+   * listener can keep the browser from caching the page for Back and Forward.
    */
-  const update = (mutator) => {
+  const confirmLeaving = (event) => {
+    event.preventDefault()
+    // Older browsers only ask when returnValue is set.
+    event.returnValue = true
+  }
+
+  // Taken around every read-modify-write, in every tab.
+  const WRITE_LOCK = `${STORAGE_KEY}.write`
+
+  /*
+   * Re-reads the latest stored state, applies the change to it, saves it, and
+   * only then tells subscribers.
+   */
+  const commit = (mutator) => {
     const base = (persistent && readPersisted()) || memoryState
     const next = mutator(base)
     const changed = next !== memoryState
     memoryState = next
     if (next !== base && persistent && !writePersisted(next)) goMemoryOnly(SAVE_FAILED)
+    // Adding the same listener again does nothing, so this needs no flag.
+    if (changed && !persistent) window.addEventListener('beforeunload', confirmLeaving)
     if (changed) notify()
   }
+
+  /*
+   * Applies a change and resolves once it's saved and subscribers have run.
+   * Re-reading before writing isn't enough on its own: two tabs changing data
+   * at the same moment would both read the same old state, and the second
+   * save would erase the first. Holding WRITE_LOCK from the read to the write
+   * makes each tab wait for the other. Browsers without Web Locks, or pages on
+   * plain http:// from another machine, apply the change without the lock.
+   */
+  const update = (mutator) =>
+    navigator.locks
+      ? navigator.locks.request(WRITE_LOCK, () => commit(mutator))
+      : Promise.resolve().then(() => commit(mutator))
 
   const subscribe = (fn) => {
     listeners.add(fn)
@@ -412,7 +447,10 @@
     upgradeStored()
     memoryState = readPersisted() || emptyState()
   } else {
-    goMemoryOnly("This browser is blocking storage, so tracked time will be lost when this tab closes. Use Export to keep a copy.")
+    // The probe writes a new key, so it fails when storage is full even though saved data can still be read.
+    const saved = readPersisted()
+    memoryState = saved || emptyState()
+    goMemoryOnly(saved ? STORAGE_READ_ONLY : STORAGE_BLOCKED)
   }
   window.addEventListener('storage', onStorageEvent)
 
@@ -445,6 +483,7 @@
     startTask,
     deleteTask,
     nextColor,
+    createId,
     getState: () => memoryState,
     getWarning: () => warning,
     isPersistent: () => persistent,

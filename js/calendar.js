@@ -45,18 +45,16 @@
   }
 
   const activePiecesInWeek = (state, now) =>
-    state.active
-      ? time.splitByDay(time.withActive([], state.active, now)[0]).filter((p) => inViewedWeek(p.dayStart))
-      : []
+    state.active ? time.splitByDay(time.withActive([], state.active, now)[0], weekStart, weekEnd()) : []
 
   // Every session piece in the viewed week, grouped by day column and sorted by start.
   const collectPieces = (state, days, now) => {
     const tasksById = new Map(state.tasks.map((t) => [t.id, t]))
     const pieces = time
       .withActive(state.sessions, state.active, now)
-      .filter((s) => tasksById.has(s.taskId) && s.end > weekStart && s.start < weekEnd())
+      .filter((s) => tasksById.has(s.taskId))
       .flatMap((session) =>
-        time.splitByDay(session).map((piece) => ({ session, piece, task: tasksById.get(session.taskId) })),
+        time.splitByDay(session, weekStart, weekEnd()).map((piece) => ({ session, piece, task: tasksById.get(session.taskId) })),
       )
     return days.map((dayStart) =>
       pieces
