@@ -90,6 +90,6 @@ Scripts are classic `<script defer>` tags that load in this order: `time.js`, `s
 - Goals and schedules have no history. Editing either recalculates progress for every day, including the 7-day table.
 - In the 7-day table, weekly and monthly tasks show the time tracked each day rather than a percentage, since their goal isn't met on any single day.
 - Text on a task color switches between white and dark by contrast, so light colors such as White stay readable on buttons and calendar blocks.
-- The task shown on Activities is kept in the address, as `#task-<id>` (or `#add` for the add form), so the task list's links work from every page and a reload keeps your place. Starting a task shows it.
+- The task shown on Activities is kept in the address, as `#task-<id>` with the id URL-encoded (or `#add` for the add form), so the task list's links work from every page and a reload keeps your place. Starting a task shows it.
 - No fonts or other files are loaded from other sites; the fonts in `fonts/` come with the site.
 - Task colors fill the same way in both themes. In the dark theme, outlines and text drawn in a task's color use a lighter tint of it (`darkEdge` in `js/storage.js`), so dark colors such as Charcoal stay visible. The switch uses CSS `light-dark()` (Chrome 123+, Safari 17.5+, Firefox 120+), so changing themes restyles the page without a reload.

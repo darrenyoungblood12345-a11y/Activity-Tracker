@@ -411,16 +411,21 @@
     return first ? first.id : null
   }
 
-  // "#task-<id>" or "#add", as written by the rail's links.
+  // "#task-<id>" or "#add", as written by the rail's links. Anything else, a malformed escape included, selects nothing.
   const readHash = () => {
-    const hash = decodeURIComponent(window.location.hash.slice(1))
+    const hash = window.location.hash.slice(1)
     if (hash === 'add') return { add: true }
-    return hash.startsWith('task-') ? { taskId: hash.slice('task-'.length) } : {}
+    if (!hash.startsWith('task-')) return {}
+    try {
+      return { taskId: decodeURIComponent(hash.slice('task-'.length)) }
+    } catch {
+      return {}
+    }
   }
 
   // replaceState doesn't fire hashchange, and keeps Back from stepping through every selection.
   const writeHash = () => {
-    const hash = mode === 'add' ? '#add' : selectedId ? `#task-${selectedId}` : ''
+    const hash = mode === 'add' ? '#add' : selectedId ? ui.taskHash(selectedId) : ''
     if (window.location.hash === hash) return
     window.history.replaceState(null, '', hash || window.location.pathname + window.location.search)
   }

@@ -253,6 +253,9 @@
     return brand ? brand.getAttribute('href') : 'index.html'
   }
 
+  // "#task-<id>", which the Activities page reads. Ids can come from an imported file, so they're encoded to stay a valid fragment.
+  const taskHash = (taskId) => `#task-${encodeURIComponent(taskId)}`
+
   const PERIOD_SUFFIX = Object.freeze({ week: 'wk', month: 'mo' })
 
   /*
@@ -290,7 +293,7 @@
       const srPeriod = el('span', { className: 'visually-hidden' })
       const link = el(
         'a',
-        { className: 'rail-task-link', href: `${home}#task-${taskId}` },
+        { className: 'rail-task-link', href: `${home}${taskHash(taskId)}` },
         el('span', { className: 'task-square', 'aria-hidden': 'true' }),
         nameEl,
         el('span', { className: 'rail-task-time' }, timeEl, periodEl, srPeriod, metEl),
@@ -325,7 +328,7 @@
       setTaskColor(chip, activeTask.color)
       const goal = time.goalFor(activeTask, now)
       const link = chip.querySelector('.now-chip-link')
-      link.href = `${home}#task-${activeTask.id}`
+      link.href = `${home}${taskHash(activeTask.id)}`
       setText(chip.querySelector('.now-chip-name'), activeTask.name)
       setText(chip.querySelector('.now-chip-time'), time.formatHMS(time.totalForRange(sessions, goal.start, goal.end, activeTask.id)))
       chip.querySelector('.now-chip-pause').setAttribute('aria-label', `Pause ${activeTask.name}`)
@@ -432,6 +435,7 @@
     plural,
     taskColorVars,
     setTaskColor,
+    taskHash,
     toggleTimer,
     mountRail,
     mountChrome,
