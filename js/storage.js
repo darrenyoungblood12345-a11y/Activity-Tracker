@@ -103,8 +103,11 @@
 
   // ---- Validation ---------------------------------------------------------
 
+  // The largest time a Date can hold, either side of 1970. Anything beyond it can't be shown or split into days.
+  const MAX_TIMESTAMP = 8.64e15
+
   const isObject = (v) => v !== null && typeof v === 'object' && !Array.isArray(v)
-  const isTimestamp = (v) => typeof v === 'number' && Number.isFinite(v)
+  const isTimestamp = (v) => typeof v === 'number' && Number.isFinite(v) && Math.abs(v) <= MAX_TIMESTAMP
   const isHexColor = (v) => typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v)
   const cleanName = (v) => (typeof v === 'string' ? v.trim().slice(0, NAME_MAX_LENGTH) : '')
   const clampGoal = (v) => Math.min(GOAL_MAX, Math.max(GOAL_MIN, Math.round(v)))
