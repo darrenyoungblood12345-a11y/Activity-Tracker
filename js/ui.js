@@ -208,10 +208,11 @@
       }
     })
 
-    replaceBtn.addEventListener('click', () => {
+    replaceBtn.addEventListener('click', async () => {
       if (!pending) return
-      store.replaceAll(pending)
+      const imported = pending
       closeConfirm()
+      await store.replaceAll(imported)
       status.textContent = 'Import complete.'
       importBtn.focus()
     })
@@ -241,7 +242,7 @@
   // Only one timer runs at a time, so starting a task pauses whichever is running.
   const toggleTimer = (taskId) => {
     const now = Date.now()
-    store.update((state) =>
+    return store.update((state) =>
       state.active && state.active.taskId === taskId ? store.pauseActive(state, now) : store.startTask(state, taskId, now),
     )
   }

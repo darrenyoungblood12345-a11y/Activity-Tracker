@@ -611,13 +611,14 @@
     editBtn.focus()
   }
 
-  const saveEdit = () => {
+  // Changes resolve once saved and rendered, so focus waits for the buttons to be back on screen.
+  const saveEdit = async () => {
     const task = findTask(selectedId)
     if (!task) return
     const fields = readTaskFields(editForm, editSchedule, task.color)
     if (!fields) return
     mode = 'view'
-    store.update((state) => store.updateTask(state, task.id, fields))
+    await store.update((state) => store.updateTask(state, task.id, fields))
     editBtn.focus()
     announce(`Saved ${fields.name}.`)
   }
@@ -638,7 +639,7 @@
     deleteBtn.focus()
   }
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     const before = store.getState().tasks
     const index = before.findIndex((t) => t.id === selectedId)
     const task = before[index]
@@ -648,7 +649,7 @@
     const neighbour = remaining[Math.min(index, remaining.length - 1)]
     selectedId = neighbour ? neighbour.id : null
     mode = 'view'
-    store.update((state) => store.deleteTask(state, task.id))
+    await store.update((state) => store.deleteTask(state, task.id))
     if (neighbour) toggleBtn.focus()
     else nameInput.focus()
     announce(`Deleted ${task.name}.`)
@@ -713,18 +714,17 @@
     selectColor(colorsBox, store.nextColor(store.getState()))
   }
 
-  form.addEventListener('submit', (event) => {
+  form.addEventListener('submit', async (event) => {
     event.preventDefault()
     const fields = readTaskFields(form, addSchedule, store.nextColor(store.getState()))
     if (!fields) return
     const now = Date.now()
-    const countBefore = store.getState().tasks.length
-    store.update((state) => store.addTask(state, fields, now))
-    const { tasks } = store.getState()
-    if (tasks.length === countBefore) return
-    // New tasks are appended, so the last one is the one just added. Put it on stage, ready to start.
+    const id = store.createId()
+    await store.update((state) => store.addTask(state, fields, now, id))
+    if (!findTask(id)) return
+    // Put the new task on stage, ready to start.
     resetAddForm()
-    select(tasks[tasks.length - 1].id)
+    select(id)
     toggleBtn.focus()
     announce(
       isScheduledOn(fields, now)
