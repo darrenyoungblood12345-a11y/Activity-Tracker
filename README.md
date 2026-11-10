@@ -49,7 +49,7 @@ All tracked data is stored under one `localStorage` key, `timeTracker.v1`. The k
 - **Elapsed time always comes from timestamps** (`now - start`), never from counting timer ticks. Background tabs, sleep and refreshes can't make the clock drift.
 - **The running timer is stored**, so it survives refreshes, moving between pages and closing the tab.
 - **Sessions that cross midnight** are stored once, as-is. They're split at local midnight only when totals are calculated or blocks are drawn (`splitByDay` in `js/time.js`), so they count toward both days.
-- **Multiple tabs stay in sync** through the browser's `storage` event. Each change holds a [Web Lock](https://developer.mozilla.org/docs/Web/API/Web_Locks_API) shared by every tab while it re-reads the latest saved state, applies the change and saves it, so two tabs changing data at the same moment can't overwrite each other. Web Locks need a secure address (`https://` or `localhost`); elsewhere, changes are saved without the lock.
+- **Multiple tabs stay in sync** through the browser's `storage` event. Each change, including a startup schema upgrade, holds a [Web Lock](https://developer.mozilla.org/docs/Web/API/Web_Locks_API) shared by every tab while it re-reads the latest saved state, applies the change and saves it, so two tabs changing data at the same moment can't overwrite each other. Web Locks need a secure address (`https://` or `localhost`) and a supported browser. When locks aren't available, saved data still loads, but changes and imports stay only in memory with a warning and the same leave-page protection described below; unlocked writes and schema upgrades are never saved. Use Export to keep those changes before leaving.
 - **Corrupt data** is replaced with an empty state instead of crashing the app. The unreadable original is kept under `timeTracker.v1.corrupt`, and a banner explains what happened.
 - **If storage is full or read-only**, your saved data still loads, new changes are kept in memory, and a warning banner says so. If storage is blocked entirely, the tracker starts empty and works the same way. Every page is a separate document, so changes kept in memory last only until you reload the page or open another one. Once there are any, the browser asks before you leave, so you can Export a copy first.
 - **The theme** is saved separately under `timeTracker.theme` (`"light"`, `"dark"` or `"system"`, and Light when unset). It's a preference for this browser, so Export and Import leave it alone. It syncs across open tabs like everything else.
@@ -82,6 +82,16 @@ js/settings.js          Settings page
 ```
 
 Scripts are classic `<script defer>` tags that load in this order: `time.js`, `storage.js`, `ui.js`, then the page script. Each script adds its part to one global, `window.TimeTracker`. The exception is `theme.js`, a plain blocking `<script>` placed before the stylesheet in `<head>`, so the page never flashes the wrong theme while it loads.
+
+## Tests
+
+Run the storage regression tests with Node.js 18 or later (no dependencies or build step):
+
+```bash
+node --test tests/storage.test.cjs
+```
+
+They cover shared-lock startup upgrades, concurrent task and session changes, import serialization, and safe memory-only behavior when locks or storage are unavailable.
 
 ## Notes
 
