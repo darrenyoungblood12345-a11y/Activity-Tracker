@@ -306,6 +306,7 @@
   const SAVE_FAILED = "Couldn't save to browser storage (it may be full or blocked). New changes are kept only on this page and are lost if you reload it or open another page, so use Export to back them up."
   const STORAGE_READ_ONLY = "Browser storage is full or read-only, so your saved data is shown but new changes can't be saved. They're lost if you reload this page or open another one, so use Export to keep a copy."
   const STORAGE_BLOCKED = 'This browser is blocking storage, so tracked time is lost when you reload this page or open another one. Use Export to keep a copy.'
+  const STORAGE_NO_LOCKS = "Browser storage can't be updated safely without Web Locks. Saved data is shown, but new changes stay only on this page and are lost if you reload it or open another page. Use Export to back them up, and open the tracker on https:// or localhost in a browser with Web Locks to save changes."
 
   // ---- Upgrading saved data -------------------------------------------------
 
@@ -374,11 +375,11 @@
    * Re-reading before writing isn't enough on its own: two tabs changing data
    * at the same moment would both read the same old state, and the second
    * save would erase the first. Holding WRITE_LOCK from the read to the write
-   * makes each tab wait for the other. Browsers without Web Locks, or pages on
-   * plain http:// from another machine, apply the change without the lock.
+   * makes each tab wait for the other. Without Web Locks, persistence is
+   * disabled at startup, so changes affect only this page's in-memory copy.
    */
   const update = (mutator) =>
-    navigator.locks
+    persistent && navigator.locks
       ? navigator.locks.request(WRITE_LOCK, () => commit(mutator))
       : Promise.resolve().then(() => commit(mutator))
 
@@ -444,8 +445,17 @@
 
   if (probeStorage()) {
     persistent = true
-    upgradeStored()
     memoryState = readPersisted() || emptyState()
+    if (navigator.locks) {
+      // Startup migrations rewrite the same snapshot as updates, so they need the same lock.
+      navigator.locks.request(WRITE_LOCK, () => {
+        upgradeStored()
+        memoryState = readPersisted() || memoryState
+        notify()
+      }).catch(() => goMemoryOnly(STORAGE_NO_LOCKS))
+    } else {
+      goMemoryOnly(STORAGE_NO_LOCKS)
+    }
   } else {
     // The probe writes a new key, so it fails when storage is full even though saved data can still be read.
     const saved = readPersisted()
