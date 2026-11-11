@@ -85,13 +85,13 @@ Scripts are classic `<script defer>` tags that load in this order: `time.js`, `s
 
 ## Tests
 
-Run the storage regression tests with Node.js 18 or later (no dependencies or build step):
+Run the regression tests with Node.js 18 or later (no dependencies or build step):
 
 ```bash
-node --test tests/storage.test.cjs
+node --test tests/storage.test.cjs tests/ui.test.cjs
 ```
 
-They cover shared-lock startup upgrades, concurrent task and session changes, import serialization, and safe memory-only behavior when locks or storage are unavailable.
+They cover shared-lock startup upgrades, concurrent task and session changes, import serialization, safe memory-only behavior when locks or storage are unavailable, and task ids from imported files that can't be written into a link.
 
 ## Notes
 

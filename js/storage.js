@@ -109,6 +109,8 @@
   const isObject = (v) => v !== null && typeof v === 'object' && !Array.isArray(v)
   const isTimestamp = (v) => typeof v === 'number' && Number.isFinite(v) && Math.abs(v) <= MAX_TIMESTAMP
   const isHexColor = (v) => typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v)
+  // Task ids go into "#task-<id>" links. Half of a surrogate pair on its own can't be encoded into one, so an id holding one is not usable.
+  const isTaskId = (v) => typeof v === 'string' && v !== '' && !/\p{Surrogate}/u.test(v)
   const cleanName = (v) => (typeof v === 'string' ? v.trim().slice(0, NAME_MAX_LENGTH) : '')
   const clampGoal = (v) => Math.min(GOAL_MAX, Math.max(GOAL_MIN, Math.round(v)))
 
@@ -144,7 +146,7 @@
    * from daily to weekly and back again restores its old day schedule.
    */
   const normalizeTask = (raw) => {
-    if (!isObject(raw) || typeof raw.id !== 'string' || !raw.id) return null
+    if (!isObject(raw) || !isTaskId(raw.id)) return null
     const name = cleanName(raw.name)
     if (!name) return null
     const goalPeriod = GOAL_PERIODS.includes(raw.goalPeriod) ? raw.goalPeriod : 'day'
