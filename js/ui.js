@@ -253,8 +253,12 @@
     return brand ? brand.getAttribute('href') : 'index.html'
   }
 
-  // "#task-<id>", which the Activities page reads. Ids can come from an imported file, so they're encoded to stay a valid fragment.
-  const taskHash = (taskId) => `#task-${encodeURIComponent(taskId)}`
+  /*
+   * "#task-<id>", which the Activities page reads. Ids can come from an imported file, so they're encoded to stay a
+   * valid fragment. Half of a surrogate pair on its own can't be encoded and would throw here, in the task list every
+   * page shows. The store drops such ids; one that still gets here becomes a link that selects nothing.
+   */
+  const taskHash = (taskId) => `#task-${encodeURIComponent(String(taskId).replace(/\p{Surrogate}/gu, '�'))}`
 
   const PERIOD_SUFFIX = Object.freeze({ week: 'wk', month: 'mo' })
 

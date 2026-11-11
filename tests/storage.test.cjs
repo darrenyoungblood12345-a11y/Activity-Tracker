@@ -204,3 +204,26 @@ test('full or blocked storage still supports protected memory-only changes', asy
     assert.equal(env.data.get(KEY), before)
   }
 })
+
+// A lone surrogate can't be written into a "#task-<id>" link, so such an id would break every page's task list.
+test('task ids that cannot be linked are dropped with their sessions, on import and on load', async () => {
+  const exported = '{"tasks":[{"id":"\\ud800","name":"Reading"},{"id":"gym\\udc00","name":"Gym"},{"id":"100%","name":"Walk"},{"id":"\\ud83d\\ude00","name":"Fun"}],'
+    + '"sessions":[{"id":"bad","taskId":"\\ud800","start":100,"end":900},{"id":"good","taskId":"100%","start":100,"end":900}],'
+    + '"active":{"taskId":"\\ud800","start":1000}}'
+  // The store's arrays belong to its own script context, so their ids are copied out before comparing.
+  const ids = (items) => Array.from(items, (item) => item.id)
+
+  const { store } = browser().tab()
+  const imported = store.parseImport(exported)
+  assert.deepEqual(ids(imported.tasks), ['100%', '\ud83d\ude00'])
+  assert.deepEqual(ids(imported.sessions), ['good'])
+  assert.equal(imported.active, null)
+
+  // Data saved by an earlier version is cleaned the same way when a page loads it.
+  const env = browser({ version: 3, ...JSON.parse(exported) })
+  const loaded = env.tab().store
+  await env.locks.flush()
+  assert.deepEqual(ids(loaded.getState().tasks), ['100%', '\ud83d\ude00'])
+  assert.deepEqual(ids(loaded.getState().sessions), ['good'])
+  assert.equal(loaded.getState().active, null)
+})
